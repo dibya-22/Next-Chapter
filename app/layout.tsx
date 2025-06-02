@@ -46,16 +46,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider >
-      <html lang="en">
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased bg-[#F5F5DC] text-[#2B2B2B] dark:bg-[#2B2B2B] dark:text-[#F5F5DC]`}
+          suppressHydrationWarning
         >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange>
+            disableTransitionOnChange
+            storageKey="next-chapter-theme"
+          >
             <Navbar />
             {children}
           </ThemeProvider>
