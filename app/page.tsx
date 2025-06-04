@@ -2,7 +2,6 @@ import Warning from "@/components/Warning";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"
 
 export default function Home() {
   return (
@@ -54,11 +53,11 @@ export default function Home() {
 
       <div className="categories flex flex-col items-center justify-center gap-3">
         <h2 className="text-3xl font-semibold mb-4 underline">Popular Categories</h2>
-        <div className="categoriesList flex items-center justify-center gap-5 transition-all duration-300 ease-in-out">
-          <Badge variant="default">Fiction</Badge>
-          <Badge variant="default">Non-Fiction</Badge>
-          <Badge variant="default">Mystery</Badge>
-          <Badge variant="default">Fantasy</Badge>
+        <div className="categoriesList flex items-center justify-center gap-5 transition-all duration-1000 ease-in-out">
+          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Fiction</div>
+          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Non-Fiction</div>
+          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Mystery</div>
+          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Fantasy</div>
         </div>
       </div>
     </main>

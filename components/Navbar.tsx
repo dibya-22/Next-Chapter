@@ -12,8 +12,7 @@ import {
     SignedOut,
     UserButton,
 } from '@clerk/nextjs'
-
-
+import { redirect } from "next/navigation";
 
 
 const ebGaramond = EB_Garamond({
@@ -81,11 +80,12 @@ const Navbar = () => {
 
     const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        console.log(searchQuery);
         setSearchQuery("");
         const input = document.getElementById("search-bar");
         input?.blur();
         setIsSearchFocused(false);
+
+        redirect(`/books?search=${encodeURIComponent(searchQuery)}`);
     }
 
     const handleSearchFocus = () => {
