@@ -7,3 +7,23 @@
         --font-poppins: 'Poppins', sans-serif;
     }
 }
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    @keyframes cartRide {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        50% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+}

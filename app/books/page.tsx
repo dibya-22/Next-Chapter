@@ -5,6 +5,19 @@ import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
 import { SectionHeader } from "@/components/books/section-header"
 
+const LoadingDots = () => {
+    return (
+        <span className="inline-flex items-center">
+            Searching
+            <span className="ml-1 flex gap-1">
+                <span className="animate-[bounce_1s_infinite_0ms]">.</span>
+                <span className="animate-[bounce_1s_infinite_200ms]">.</span>
+                <span className="animate-[bounce_1s_infinite_400ms]">.</span>
+            </span>
+        </span>
+    )
+}
+
 const Books = () => {
     const searchParams = useSearchParams()
     const search = searchParams.get("search")
@@ -20,6 +33,9 @@ const Books = () => {
         business: [],
     })
     const [newArrivalsBooks, setNewArrivalsBooks] = useState<Book[]>([])
+    const [deepSearching, setDeepSearching] = useState(false)
+    const [deepSearchAttempted, setDeepSearchAttempted] = useState(false)
+    const [extensiveSearchAttempted, setExtensiveSearchAttempted] = useState(false)
 
     const getBooks = async () => {
         try {
@@ -50,10 +66,83 @@ const Books = () => {
         }
     }
 
+
+    // Search
     const getSearchResults = async () => {
         const searchResults = await fetch(`/api/books?type=${BookType.SEARCH_RESULTS}&search=${search}`)
         const data = await searchResults.json()
         setSearchResultsBooks(data)
+    }
+
+    const handleDeepSearch = async () => {
+        if (!deepSearching) {
+            setDeepSearching(true);
+            setDeepSearchAttempted(true);
+        }
+
+        if(search){
+            try {
+                console.log('Starting deep search for:', search);
+                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
+                const data = await res.json();
+                
+                console.log('Deep search response:', data);
+                
+                if (data.error) {
+                    console.error('Search error:', data.error);
+                    setSearchResultsBooks([]);
+                } else {
+                    setSearchResultsBooks(data.books || []);
+                }
+            } catch (error) {
+                console.error('Deep search error:', error);
+                setSearchResultsBooks([]);
+            } finally {
+                setDeepSearching(false);
+            }
+        }
+    }
+
+    const handleExtensiveSearch = async () => {
+        if (!deepSearching) {
+            setDeepSearching(true);
+            setExtensiveSearchAttempted(true);
+        }
+
+        if(search){
+            try {
+                console.log('Starting extensive search for:', search);
+                // Add more search terms to make the search more extensive
+                const searchTerms = [
+                    search,
+                    search.split(' ').join(' OR '), // Search for individual words
+                    search + ' book', // Add "book" to the search
+                    search.split(' ').slice(0, 2).join(' ') // Try with just first two words
+                ];
+                
+                const allResults = [];
+                for (const term of searchTerms) {
+                    const res = await fetch(`/api/search-books?query=${encodeURIComponent(term)}`);
+                    const data = await res.json();
+                    if (data.books) {
+                        allResults.push(...data.books);
+                    }
+                }
+                
+                // Remove duplicates based on ISBN
+                const uniqueResults = allResults.filter((book, index, self) =>
+                    index === self.findIndex((b) => b.isbn === book.isbn)
+                );
+                
+                console.log('Extensive search response:', uniqueResults);
+                setSearchResultsBooks(uniqueResults);
+            } catch (error) {
+                console.error('Extensive search error:', error);
+                setSearchResultsBooks([]);
+            } finally {
+                setDeepSearching(false);
+            }
+        }
     }
 
     useEffect(() => {
@@ -63,20 +152,69 @@ const Books = () => {
     useEffect(() => {
         if (search) {
             getSearchResults()
+            // Reset deep search states when search changes
+            setDeepSearching(false)
+            setDeepSearchAttempted(false)
+            setExtensiveSearchAttempted(false)
         }
     }, [search])
 
     return (
-        <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[11vh] space-y-8 sm:space-y-12">
+        <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto my-10 px-4 sm:px-6 lg:px-8 mt-[11vh] space-y-8 sm:space-y-12">
             {/* Search Results */}
             {search && (
                 <section className="search-results">
                     {searchResultsBooks.length > 0 ? (
-                        <SectionHeader title={`Search Results for "${search}"`} />
+                        <>
+                            <SectionHeader title={`Search Results for "${search}"`} />
+                            <BooksGrid books={searchResultsBooks} />
+                            {searchResultsBooks.length < 5 && !deepSearching && !deepSearchAttempted && (
+                                <div onClick={handleDeepSearch} className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600">
+                                    Found only {searchResultsBooks.length} results. Try Deep Search...
+                                </div>
+                            )}
+                            {searchResultsBooks.length < 5 && deepSearching && (
+                                <div className="w-fit ml-10 mt-6 text-blue-500">
+                                    <LoadingDots />
+                                </div>
+                            )}
+                            {searchResultsBooks.length < 5 && deepSearchAttempted && !deepSearching && !extensiveSearchAttempted && (
+                                <div className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600" onClick={handleExtensiveSearch}>
+                                    Not Satisfied? Try Again...
+                                </div>
+                            )}
+                            {searchResultsBooks.length < 5 && extensiveSearchAttempted && !deepSearching && (
+                                <div className="w-fit ml-10 mt-6 text-gray-500">
+                                    No more books found in our database or Google Books API.
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        <SectionHeader title={`No Results Found for "${search}"`} />
+                        <>
+                            <SectionHeader title={`No Results Found for "${search}"`} />
+                            <BooksGrid books={searchResultsBooks} />
+                            {!deepSearching && !deepSearchAttempted && (
+                                <div onClick={handleDeepSearch} className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600">
+                                    Try Deep Search...
+                                </div>
+                            )}
+                            {deepSearching && (
+                                <div className="w-fit ml-10 mt-6 text-blue-500">
+                                    <LoadingDots />
+                                </div>
+                            )}
+                            {deepSearchAttempted && !deepSearching && searchResultsBooks.length === 0 && !extensiveSearchAttempted && (
+                                <div className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600" onClick={handleExtensiveSearch}>
+                                    Not Satisfied? Try Again...
+                                </div>
+                            )}
+                            {extensiveSearchAttempted && !deepSearching && searchResultsBooks.length === 0 && (
+                                <div className="w-fit ml-10 mt-6 text-gray-500">
+                                    No books found in our database or Google Books API.
+                                </div>
+                            )}
+                        </>
                     )}
-                    <BooksGrid books={searchResultsBooks} />
                 </section>
             )}
 
@@ -97,25 +235,25 @@ const Books = () => {
                 <SectionHeader title="Categories" />
 
                 {/* Category - Fiction */}
-                <div className="fiction">
+                <div className="fiction ml-10">
                     <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Fiction</h2>
                     <BooksGrid books={categoriesBooks.fiction} />
                 </div>
 
                 {/* Category - Non-Fiction */}
-                <div className="non-fiction">
+                <div className="non-fiction ml-10">
                     <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Non-Fiction</h2>
                     <BooksGrid books={categoriesBooks.nonFiction} />
                 </div>
 
                 {/* Category - Self-Help */}
-                <div className="self-help">
+                <div className="self-help ml-10">
                     <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Self-Help</h2>
                     <BooksGrid books={categoriesBooks.selfHelp} />
                 </div>
 
                 {/* Category - Business */}
-                <div className="business">
+                <div className="business ml-10">
                     <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Business</h2>
                     <BooksGrid books={categoriesBooks.business} />
                 </div>

@@ -69,6 +69,10 @@ export default {
 					'50%': { transform: 'rotate(180deg)', opacity: '0' },
 					'100%': { transform: 'rotate(360deg)', opacity: '1' },
 				},
+				bounce: {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-4px)' },
+				}
 			},
 			animation: {
 				wiggle: 'wiggle 0.5s ease-in-out',
