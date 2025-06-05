@@ -168,6 +168,7 @@ export async function POST() {
                         : null;
 
                     const price = Math.floor(Math.random() * 1000) + 150;
+                    const discount = 0.1;
                     const stock = Math.floor(Math.random() * 200) + 50;
                     const rating = 0; // Default rating
                     const ratingCount = 0; // Default rating count
@@ -178,13 +179,13 @@ export async function POST() {
                             `INSERT INTO books (
                                 title, authors, description, thumbnail, 
                                 isbn, price, stock, category, total_sold, 
-                                rating, rating_count, pages
+                                discount, rating, rating_count, pages
                             )
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                             [
                                 title, authors, description, thumbnail, 
                                 isbn, price, stock, category, totalSold, 
-                                rating, ratingCount, totalPages
+                                discount, rating, ratingCount, totalPages
                             ]
                         );
                         console.log(`Added new book: ${title}`);

@@ -14,6 +14,7 @@ export interface Book {
     thumbnail: string | null;
     isbn: string | null;
     price: number;
+    discount: number;
     stock: number;
     category: string;
     total_sold: number;
