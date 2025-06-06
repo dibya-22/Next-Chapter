@@ -16,34 +16,34 @@ export default function Home() {
       <div className="features flex flex-col items-center justify-center gap-5">
         <h2 className="text-3xl font-semibold mb-4 underline">Featured Books</h2>
         <div className="featuredBooks grid grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 gap-10">
-          <Link href="/" className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
+          <Link href={`${process.env.HOST}/books?search=ikigai`} className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
             <Image
-              src="/demo.jpg"
-              alt="book cover"
+              src="https://books.google.com/books/content?id=CbouDwAAQBAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api"
+              alt="Ikigai book cover"
               fill
               className="object-cover"
             />
           </Link>
-          <Link href="/" className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
+          <Link href={`${process.env.HOST}/books?search=atomic%20habit`} className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
             <Image
-              src="/demo2.jpg"
-              alt="book cover"
+              src="https://books.google.com/books/content?id=fFCjDQAAQBAJ&printsec=frontcover&img=1&zoom=3&edge=curl&source=gbs_api"
+              alt="Atomic Habit book cover"
               fill
               className="object-cover"
             />
           </Link>
-          <Link href="/" className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
+          <Link href={`${process.env.HOST}/books?search=kaizen`} className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
             <Image
-              src="/demo.jpg"
-              alt="book cover"
+              src="https://books.google.com/books/content?id=5EORDwAAQBAJ&printsec=frontcover&img=1&zoom=3&edge=curl&source=gbs_api"
+              alt="Kaizen book cover"
               fill
               className="object-cover"
             />
           </Link>
-          <Link href="/" className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
+          <Link href={`${process.env.HOST}/books?search=vagabond%2037`} className="relative w-[180px] h-[270px] border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-300 ease-in-out">
             <Image
-              src="/demo2.jpg"
-              alt="book cover"
+              src="https://books.google.com/books/content?id=A3CPoAEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+              alt="Vagabond book cover"
               fill
               className="object-cover"
             />
@@ -54,10 +54,10 @@ export default function Home() {
       <div className="categories flex flex-col items-center justify-center gap-3">
         <h2 className="text-3xl font-semibold mb-4 underline">Popular Categories</h2>
         <div className="categoriesList flex items-center justify-center gap-5 transition-all duration-1000 ease-in-out">
-          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Fiction</div>
-          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Non-Fiction</div>
-          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Mystery</div>
-          <div className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Fantasy</div>
+          <Link href={`${process.env.HOST}/books?search=fiction`} className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Fiction</Link>
+          <Link href={`${process.env.HOST}/books?search=comic`} className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Comic</Link>
+          <Link href={`${process.env.HOST}/books?search=self-help`} className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Self Help</Link>
+          <Link href={`${process.env.HOST}/books?search=business`} className="capsule bg-gray-300 hover:bg-gray-300/50 dark:bg-gray-500 dark:hover:bg-gray-500/50  w-fit px-2 py-0.5 rounded-xl cursor-pointer transform hover:scale-105 active:scale-95 font-bold text-sm">Business</Link>
         </div>
       </div>
     </main>
