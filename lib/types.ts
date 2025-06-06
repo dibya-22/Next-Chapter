@@ -25,9 +25,19 @@ export interface Book {
 }
 
 
-export interface Categories{
+export interface Categories {
     fiction: Book[];
     nonFiction: Book[];
     selfHelp: Book[];
     business: Book[];
+}
+
+export interface CartItem {
+    id: string
+    title: string
+    authors: string | string[]
+    thumbnail?: string
+    originalPrice: number
+    discount: number
+    quantity: number
 }

@@ -128,7 +128,7 @@ export async function GET(request: Request) {
                         : DEFAULT_COVER,
                     isbn: isbn,
                     price: Math.floor(Math.random() * 1000) + 150, // Random price between 150-1150
-                    discount: Math.floor(Math.random() * 30), // Random discount 0-30%
+                    discount: 15,
                     stock: Math.floor(Math.random() * 200) + 50, // Random stock 50-250
                     category: volume.categories?.[0]?.toLowerCase() || 'uncategorized',
                     total_sold: 0,
