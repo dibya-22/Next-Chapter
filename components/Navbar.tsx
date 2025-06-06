@@ -28,6 +28,7 @@ const ebGaramond = EB_Garamond({
 const Navbar = () => {
     const { theme, setTheme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
@@ -44,7 +45,21 @@ const Navbar = () => {
 
     useEffect(() => {
         setMounted(true);
+        // Fetch cart count when component mounts
+        fetchCartCount();
     }, []);
+
+    const fetchCartCount = async () => {
+        try {
+            const response = await fetch('/api/cart');
+            if (response.ok) {
+                const data = await response.json();
+                setCartCount(data.length);
+            }
+        } catch (error) {
+            console.error('Error fetching cart count:', error);
+        }
+    };
 
     const toggletheme = () => {
         if (theme === "dark") {
@@ -183,7 +198,7 @@ const Navbar = () => {
                                     className='dark:invert'
                                 />
                             </button>
-                            <Link href="/cart" className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
+                            <Link href="/cart" className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
                                 <Image
                                     src="/icons/cart.png"
                                     width={23}
@@ -191,16 +206,21 @@ const Navbar = () => {
                                     alt="cart icon"
                                     className='dark:invert'
                                 />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {cartCount}
+                                    </span>
+                                )}
                             </Link>
-                            <button onClick={toggleCategoryMenu} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch">
+                            <Link href="/orders" className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
                                 <Image
-                                    src={isCategoryMenuOpen ? "/icons/category-open.png" : "/icons/category-close.png"}
-                                    width={isCategoryMenuOpen ? 23 : 20}
-                                    height={isCategoryMenuOpen ? 23 : 20}
-                                    alt="category icon"
+                                    src="/icons/orders.png"
+                                    width={23}
+                                    height={23}
+                                    alt="orders icon"
                                     className='dark:invert'
                                 />
-                            </button>
+                            </Link>
                         </div>
                         <button onClick={toggleMenu} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch">
                             <Image

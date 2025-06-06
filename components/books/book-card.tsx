@@ -1,16 +1,17 @@
 "use client"
 import Image from "next/image"
 import type React from "react"
-
 import { Star, StarHalf, Users, Eye, ShoppingCart, BookOpen, Check } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import type { Book } from "@/lib/types"
+import { useUser } from "@clerk/nextjs"
 
 interface BookCardProps {
     book: Book
 }
 
 export function BookCard({ book }: BookCardProps) {
+    const { isSignedIn } = useUser();
     const [isExpanded, setIsExpanded] = useState(false)
     const [isAddingToCart, setIsAddingToCart] = useState(false)
     const [isAdded, setIsAdded] = useState(false)
@@ -34,14 +35,38 @@ export function BookCard({ book }: BookCardProps) {
         setIsExpanded(false)
     }
 
-    const handleAddToCart = (e: React.MouseEvent) => {
+    const handleAddToCart = async (e: React.MouseEvent) => {
         e.stopPropagation()
         if (isAddingToCart || isAdded) return
 
+        if (!isSignedIn) {
+            return;
+        }
+
         setIsAddingToCart(true)
 
-        // After animation completes
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: book.id,
+                    title: book.title,
+                    authors: book.authors,
+                    thumbnail: book.thumbnail,
+                    originalPrice: book.price,
+                    discount: book.discount,
+                    quantity: 1
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add to cart');
+            }
+
+            // After successful addition
             setIsAddingToCart(false)
             setIsAdded(true)
 
@@ -49,7 +74,11 @@ export function BookCard({ book }: BookCardProps) {
             setTimeout(() => {
                 setIsAdded(false)
             }, 1500)
-        }, 1000)
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            setIsAddingToCart(false)
+            // You might want to show an error message to the user
+        }
     }
 
     // Handle click outside to collapse
