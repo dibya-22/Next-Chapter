@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
-import { SectionHeader } from "@/components/books/section-header"
+import { SectionHeader } from "@/components/section-header"
 
 const LoadingDots = () => {
     return (

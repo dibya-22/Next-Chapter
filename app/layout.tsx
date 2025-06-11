@@ -5,6 +5,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from '@clerk/nextjs'
+import Script from "next/script";
+import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +50,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <Script
+            src="https://checkout.razorpay.com/v1/checkout.js"
+            strategy="beforeInteractive"
+          />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased bg-[#F5F5DC] text-[#2B2B2B] dark:bg-[#2B2B2B] dark:text-[#F5F5DC]`}
           suppressHydrationWarning

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
@@ -78,7 +79,7 @@ export default {
 				wiggle: 'wiggle 0.5s ease-in-out',
 				switch: 'switch 0.5s ease-in-out',
 			},
-		}
+		},
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [tailwindcssAnimate],
 } satisfies Config;
