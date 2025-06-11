@@ -120,7 +120,7 @@ const Order = () => {
                             key={order.id}
                             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
                         >
-                            <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+                            <div className={`p-5 ${isExpanded ? "border-b border-gray-200 dark:border-gray-700" : ""}`}>
                                 <div className="flex flex-col md:flex-row justify-between gap-4">
                                     <div>
                                         <div className="flex items-center gap-2">
