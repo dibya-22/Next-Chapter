@@ -1,17 +1,56 @@
-import React from 'react'
-import AdminNav from './components/AdminNav'
+"use client"
+import type React from "react"
+import { usePathname } from "next/navigation"
+import { AppSidebar } from "./components/app-sidebar"
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-
+    const pathname = usePathname();
+    const segments = pathname.split('/').filter(Boolean);
+    const currentPage = segments[segments.length - 1] || 'dashboard';
+    const formattedPage = currentPage
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 
     return (
-        <div className="flex min-h-[calc(100vh-11vh)] mt-[11vh] bg-[#F5F5DC] text-[#2B2B2B] dark:bg-[#2B2B2B] dark:text-[#F5F5DC]">
-            <aside className={`w-64 h-[calc(100vh-15vh)] p-6 my-4 fixed left-0 top-[11vh] bg-gray-100 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-r-3xl`}>
-                <AdminNav />
-            </aside>
-            <main className="w-screen mx-auto pl-5 py-3">
-                {children}
-            </main>
+        <div className="fixed inset-0 mt-[11vh] bg-[#F5F5DC] text-[#2B2B2B] dark:bg-[#2B2B2B] dark:text-[#F5F5DC] w-full" suppressHydrationWarning>
+            <SidebarProvider>
+                <div className="flex h-[calc(100vh-11vh)] w-full">
+                    <AppSidebar />
+                    <SidebarInset className="flex flex-col flex-1 w-full">
+                        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-r border-gray-300 dark:border-gray-700 pl-4">
+                            <SidebarTrigger className="-ml-1" suppressHydrationWarning />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>{formattedPage}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                        </header>
+                        <main className="flex-1 overflow-y-auto w-full">
+                            <div className="h-full p-4 w-full">
+                                {children}
+                            </div>
+                        </main>
+                    </SidebarInset>
+                </div>
+            </SidebarProvider>
         </div>
     )
 }

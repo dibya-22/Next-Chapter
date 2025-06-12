@@ -38,7 +38,7 @@ const poppins = localFont({
 export const metadata: Metadata = {
   title: 'Next Chapter - Book Discovery',
   description: 'Discover your next favorite book with our curated selection. Explore a wide range of genres and find your next read today.',
-  keywords: ["books", "book discovery", "reading", "literature", "book recommendations"],
+  keywords: ["books", "book discovery", "reading", "literature", "book recommendations", "next chapter", "book reviews", "book community"],
   icons: {
     icon: [
       { url: '/favicon.png', sizes: 'any' },

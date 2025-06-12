@@ -1,30 +1,34 @@
-'use client'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
+import Link from "next/link"
+import { Users, ChartBarBig, Book, BookPlus, Package2} from "lucide-react"
+import { usePathname } from "next/navigation"
+
+const navItems = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: ChartBarBig },
+    { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/orders", label: "Orders", icon: Package2 },
+    { href: "/admin/books", label: "Books", icon: Book },
+    { href: "/admin/add-book", label: "Add Book", icon: BookPlus },
+]
 
 export default function AdminNav() {
     const pathname = usePathname();
-
     return (
-        <ul className="flex flex-col items-center gap-5 my-10">
-            <li className='w-[80%]'>
-                <Link 
-                    href="/admin/dashboard" 
-                    className={`bg-gray-200 dark:bg-[#2B2B2B] block w-full text-center py-2 rounded-lg cursor-pointer border border-gray-300 dark:border-gray-700 ${pathname === '/admin/dashboard' ? 'shadow-[4px_4px_10px_rgba(0,0,0,0.6),_-4px_-4px_10px_rgba(255,255,255,0.1)]' : 'shadow-[inset_4px_4px_8px_rgba(0,0,0,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.1)]'}`}
-                >Dashboard</Link>
-            </li>
-            <li className='w-[80%]'>
-                <Link 
-                    href="/admin/books" 
-                    className={`bg-gray-200 dark:bg-[#2B2B2B] block w-full text-center py-2 rounded-lg cursor-pointer border border-gray-300 dark:border-gray-700 ${pathname === '/admin/books' ? 'shadow-[4px_4px_10px_rgba(0,0,0,0.6),_-4px_-4px_10px_rgba(255,255,255,0.1)]' : 'shadow-[inset_4px_4px_8px_rgba(0,0,0,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.1)]'}`}
-                >Books</Link>
-            </li>
-            <li className='w-[80%]'>
-                <Link 
-                    href="/admin/add-book" 
-                    className={`bg-gray-200 dark:bg-[#2B2B2B] block w-full text-center py-2 rounded-lg cursor-pointer border border-gray-300 dark:border-gray-700 ${pathname === '/admin/add-book' ? 'shadow-[4px_4px_10px_rgba(0,0,0,0.6),_-4px_-4px_10px_rgba(255,255,255,0.1)]' : 'shadow-[inset_4px_4px_8px_rgba(0,0,0,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.1)]'}`}
-                >Add Book</Link>
-            </li>
-        </ul>
+        <nav className="space-y-2">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Admin Panel</h2>
+            {navItems.map((item) => {
+                const Icon = item.icon
+                return (
+                    <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 ${pathname === item.href ? 'bg-gray-500 dark:bg-gray-600' : ''}`}
+                        title={item.label}
+                    >
+                        <Icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                    </Link>
+                )
+            })}
+        </nav>
     )
 }

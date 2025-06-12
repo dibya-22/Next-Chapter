@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server"
 import pool from "@/lib/db"
 import { auth } from "@clerk/nextjs/server";
 import { CartItem } from "@/lib/types";

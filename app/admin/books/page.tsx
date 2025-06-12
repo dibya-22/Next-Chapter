@@ -28,7 +28,7 @@ export default function BooksPage() {
 
     return (
         <div className="h-[calc(100vh-14vh)] flex flex-col items-center ">
-            <h1 className='text-6xl font-bold my-10 underline'>Manage Books</h1>
+            <h1 className='text-3xl font-bold my-10 underline'>Manage Books</h1>
             <form className='flex items-center gap-5'>
                 <input
                     value={searchQuery}
