@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from '@clerk/nextjs'
 import Script from "next/script";
-import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,9 +36,19 @@ const poppins = localFont({
 })
 
 export const metadata: Metadata = {
-  title: "Next Chapter - Book Discovery",
+  title: 'Next Chapter - Book Discovery',
+  description: 'Discover your next favorite book with our curated selection. Explore a wide range of genres and find your next read today.',
   keywords: ["books", "book discovery", "reading", "literature", "book recommendations"],
-  description: "Discover your next favorite book with our curated selection. Explore a wide range of genres and find your next read today.",
+  icons: {
+    icon: [
+      { url: '/favicon.png', sizes: 'any' },
+      { url: '/favicon.png', sizes: '32x32' },
+      { url: '/favicon.png', sizes: '16x16' },
+    ],
+    apple: [
+      { url: '/favicon.png' },
+    ],
+  },
 };
 
 export default function RootLayout({
