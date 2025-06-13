@@ -14,7 +14,6 @@ export async function GET() {
             limit: 100,
         });
 
-        // Transform the users data to include all required fields
         const transformedUsers = users.data.map(user => ({
             id: user.id,
             firstName: user.firstName,

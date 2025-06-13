@@ -1,15 +1,23 @@
-import type { NextConfig } from "next";
+import { NextConfig } from 'next'
 
-const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'books.google.com',
-        pathname: '/books/content/**',
-      },
-    ],
-  },
-};
+const config: NextConfig = {
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'books.google.com',
+                pathname: '/books/content/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'img.clerk.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'images.clerk.dev',
+            },
+        ],
+    },
+}
 
-export default nextConfig;
+export default config
