@@ -14,7 +14,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 interface User {
     id: string
@@ -37,12 +48,14 @@ const Users = () => {
     const [users, setUsers] = useState<User[] | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [currentPage, setCurrentPage] = useState(1)
+    const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
     const itemsPerPage = 10
 
     const fetchUsers = async () => {
         try {
             setLoading(true)
-            const response = await fetch("/api/admin/get-users", {
+            const response = await fetch("/api/admin/users/get-users", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,6 +75,53 @@ const Users = () => {
             return { error: "Failed to fetch users" }
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleStatusUpdate = async (user: User) => {
+        setSelectedUser(user)
+        setShowConfirmDialog(true)
+    }
+
+    const confirmStatusUpdate = async () => {
+        if (!selectedUser) return
+
+        try {
+            const newStatus = selectedUser.status === "active" ? "blocked" : "active"
+            const response = await fetch("/api/admin/users/update-user-status", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    targetUserId: selectedUser.id,
+                    newStatus
+                })
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to update user status")
+            }
+
+            toast.success(data.message)
+            
+            // Update local state
+            setUsers(prevUsers => {
+                if (!prevUsers) return null
+                return prevUsers.map(user => 
+                    user.id === selectedUser.id 
+                        ? { ...user, status: newStatus }
+                        : user
+                )
+            })
+        } catch (error) {
+            console.error("Error updating user status:", error)
+            toast.error(error instanceof Error ? error.message : "Failed to update user status")
+        } finally {
+            setShowConfirmDialog(false)
+            setSelectedUser(null)
         }
     }
 
@@ -129,6 +189,11 @@ const Users = () => {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
+    }
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success("Copied to clipboard!");
     }
 
     if (loading) {
@@ -221,6 +286,43 @@ const Users = () => {
 
     return (
         <div className="w-full p-3">
+            <ToastContainer
+                position="top-right"
+                autoClose={1000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogContent className="bg-[#F5F5DC] dark:bg-[#2B2B2B] border-border">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {selectedUser?.status === "active" ? "Block User" : "Activate User"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to {selectedUser?.status === "active" ? "block" : "activate"} {selectedUser?.firstName || selectedUser?.username || "this user"}? 
+                            {selectedUser?.status === "active" 
+                                ? " They will not be able to access the platform until unblocked." 
+                                : " They will regain access to the platform."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={confirmStatusUpdate}
+                            className={selectedUser?.status === "active" ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"}
+                        >
+                            {selectedUser?.status === "active" ? "Block User" : "Activate User"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <Card className="overflow-hidden border-border">
                 <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
                     <h1 className="text-2xl font-bold">Users</h1>
@@ -245,7 +347,7 @@ const Users = () => {
                         <TableBody>
                             {currentUsers?.map((user) => (
                                 <TableRow key={user.id} className="group hover:bg-muted/50 transition-colors">
-                                    <TableCell className="font-mono text-xs text-muted-foreground text-center" title={user.id}>
+                                    <TableCell onClick={() => copyToClipboard(user.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={user.id}>
                                         {truncateId(user.id)}
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -266,7 +368,7 @@ const Users = () => {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="max-w-[200px] truncate text-center" title={user.email}>
+                                    <TableCell onClick={() => copyToClipboard(user.email)} className="max-w-[200px] truncate text-center transform active:scale-95 cursor-pointer" title={user.email}>
                                         {user.email || "N/A"}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground text-center">{user.username || "N/A"}</TableCell>
@@ -305,11 +407,13 @@ const Users = () => {
                                                     <DropdownMenuItem>View details</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
-                                                        className={
-                                                            user.status === "active"
+                                                        className={`
+                                                            ${user.status === "active"
                                                                 ? "text-rose-600 dark:text-rose-400"
-                                                                : "text-emerald-600 dark:text-emerald-400"
-                                                        }
+                                                                : "text-emerald-600 dark:text-emerald-400"}
+                                                            cursor-pointer
+                                                        `}
+                                                        onClick={() => handleStatusUpdate(user)}
                                                     >
                                                         {user.status === "active" ? "Block user" : "Activate user"}
                                                     </DropdownMenuItem>
