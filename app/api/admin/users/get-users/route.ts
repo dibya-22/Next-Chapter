@@ -24,7 +24,7 @@ export async function GET() {
             createdAt: user.createdAt,
             lastSignInAt: user.lastSignInAt,
             role: user.publicMetadata?.role || 'user',
-            status: user.publicMetadata?.status || 'active'
+            status: user.privateMetadata?.blocked ? 'blocked' : 'active'
         }));
 
         return NextResponse.json({ users: transformedUsers });

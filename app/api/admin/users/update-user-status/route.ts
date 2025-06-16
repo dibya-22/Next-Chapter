@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         // Update user's status in private metadata
         await clerk.users.updateUser(targetUserId, {
             privateMetadata: { 
+                ...user.privateMetadata,
                 disabled: newStatus === "blocked",
                 blocked: newStatus === "blocked"
             }
