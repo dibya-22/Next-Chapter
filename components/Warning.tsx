@@ -18,7 +18,7 @@ const Warning = () => {
                 {/* Warning Container */}
                 <div className='relative w-fit bg-white dark:bg-gray-800 
                     border-2 border-red-600 dark:border-red-500 
-                    rounded-lg p-10 shadow-lg
+                    rounded-[0.5rem] p-10 shadow-lg
                     flex flex-col items-center justify-center'>
 
                     {/* Warning Message */}

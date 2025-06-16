@@ -21,7 +21,7 @@ export default function AdminNav() {
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 ${pathname === item.href ? 'bg-gray-500 dark:bg-gray-600' : ''}`}
+                        className={`flex items-center space-x-3 px-3 py-2 rounded-[0.5rem] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 ${pathname === item.href ? 'bg-gray-500 dark:bg-gray-600' : ''}`}
                         title={item.label}
                     >
                         <Icon className="w-5 h-5" />

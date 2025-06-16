@@ -63,7 +63,7 @@ export function CartCard({ item, onQuantityChange, onRemove }: CartCardProps) {
             <div className="block sm:hidden">
                 <div className="flex gap-3 mb-3">
                     {/* Book Image */}
-                    <div className="relative w-14 h-18 flex-shrink-0 rounded-lg overflow-hidden shadow-md">
+                    <div className="relative w-14 h-18 flex-shrink-0 rounded-[0.5rem] overflow-hidden shadow-md">
                         <Image
                             src={item.thumbnail || "/placeholder.svg?height=120&width=80"}
                             alt={item.title}
@@ -115,7 +115,7 @@ export function CartCard({ item, onQuantityChange, onRemove }: CartCardProps) {
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-600 dark:text-gray-400">Qty:</span>
-                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-[0.5rem]">
                             <button
                                 onClick={handleQuantityDecrease}
                                 disabled={item.quantity <= 1}
@@ -151,7 +151,7 @@ export function CartCard({ item, onQuantityChange, onRemove }: CartCardProps) {
             <div className="hidden sm:block">
                 <div className="flex gap-4">
                     {/* Book Image */}
-                    <div className="relative w-16 h-20 md:w-20 md:h-24 lg:w-24 lg:h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-md">
+                    <div className="relative w-16 h-20 md:w-20 md:h-24 lg:w-24 lg:h-28 flex-shrink-0 rounded-[0.5rem] overflow-hidden shadow-md">
                         <Image
                             src={item.thumbnail || "/placeholder.svg?height=120&width=80"}
                             alt={item.title}
@@ -216,7 +216,7 @@ export function CartCard({ item, onQuantityChange, onRemove }: CartCardProps) {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm md:text-base text-gray-600 dark:text-gray-400">Qty:</span>
-                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-[0.5rem]">
                                     <button
                                         onClick={handleQuantityDecrease}
                                         disabled={item.quantity <= 1}

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import Link from "next/link"
 
 interface User {
     id: string
@@ -404,7 +405,7 @@ const Users = () => {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="bg-white dark:bg-[#2B2B2B] z-50">
                                                     <DropdownMenuItem>Edit user</DropdownMenuItem>
-                                                    <DropdownMenuItem>View details</DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer"><Link href={`/admin/users/${user.id}`}>View details</Link></DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
                                                         className={`
