@@ -45,11 +45,7 @@ import {
     Clock,
     XCircle,
     ArrowLeft,
-    IndianRupee,
 } from "lucide-react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate } from "@/lib/utils"
 
 interface OrderItem {
@@ -110,33 +106,7 @@ const getStatusVariant = (status: string) => {
     }
 }
 
-const getStatusIcon = (status: string) => {
-    switch (status?.toLowerCase()) {
-        case 'completed':
-            return <CreditCard className="h-4 w-4 mr-1" />
-        case 'pending':
-            return <Package className="h-4 w-4 mr-1" />
-        case 'processing':
-            return <Package className="h-4 w-4 mr-1" />
-        case 'delivered':
-            return <Truck className="h-4 w-4 mr-1" />
-        case 'cancelled':
-            return <Package className="h-4 w-4 mr-1" />
-        default:
-            return <Package className="h-4 w-4 mr-1" />
-    }
-}
 
-const getRoleVariant = (role?: string) => {
-    switch (role?.toLowerCase()) {
-        case 'admin':
-            return 'default'
-        case 'user':
-            return 'secondary'
-        default:
-            return 'secondary'
-    }
-}
 
 const getRoleIcon = (role?: string) => {
     switch (role?.toLowerCase()) {

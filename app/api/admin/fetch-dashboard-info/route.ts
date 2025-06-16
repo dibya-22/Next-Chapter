@@ -7,16 +7,6 @@ export async function GET() {
     const client = await pool.connect();
     const { userId } = await auth();
 
-    console.log("Auth check:", {
-        userId,
-        adminId: process.env.ADMIN_USER_ID,
-        isAdmin: userId === process.env.ADMIN_USER_ID,
-        envVars: {
-            hasAdminId: !!process.env.ADMIN_USER_ID,
-            adminIdLength: process.env.ADMIN_USER_ID?.length
-        }
-    });
-
     if (!userId) {
         console.log("No userId found in auth");
         return NextResponse.json({ error: "No user ID found" }, { status: 401 });
