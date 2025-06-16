@@ -17,3 +17,8 @@ export function formatDate(dateString: string | null) {
             weekday: 'short'
         }).toUpperCase() + ')'
 }
+export function getMonth(datenow: string | null = new Date().toISOString()) {
+    if (!datenow) return 'Not available';
+    const date = new Date(datenow);
+    return date.toLocaleString('en-US', { month: 'long' });
+}
