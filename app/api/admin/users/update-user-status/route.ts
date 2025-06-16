@@ -31,17 +31,17 @@ export async function POST(request: Request) {
         const user = await clerk.users.getUser(targetUserId);
         const isCurrentlyDisabled = user.privateMetadata?.disabled === true;
 
-        // Toggle the disabled status
-        const shouldDisable = !isCurrentlyDisabled;
-
-        // Update user's disabled status in private metadata
+        // Update user's status in private metadata
         await clerk.users.updateUser(targetUserId, {
-            privateMetadata: { disabled: shouldDisable }
+            privateMetadata: { 
+                disabled: newStatus === "blocked",
+                blocked: newStatus === "blocked"
+            }
         });
 
         return NextResponse.json({ 
             success: true,
-            message: `User ${shouldDisable ? "blocked" : "activated"} successfully`
+            message: `User ${newStatus === "blocked" ? "blocked" : "activated"} successfully`
         });
     } catch (error) {
         console.error("Error updating user status:", error);
