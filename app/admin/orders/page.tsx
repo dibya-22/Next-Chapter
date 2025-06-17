@@ -14,6 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Order {
     id: string | number
@@ -26,12 +37,27 @@ interface Order {
     delivered_date: string | Date
 }
 
+const ORDER_STATUSES = [
+    "Order Placed",
+    "Processing",
+    "Shipped",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled"
+] as const;
+
 const Orders = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalOrders, setTotalOrders] = useState(0);
     const itemsPerPage = 10;
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [showStatusDialog, setShowStatusDialog] = useState(false);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [selectedNewStatus, setSelectedNewStatus] = useState<string | null>(null);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     const fetchOrders = async (page = 1) => {
         try {
@@ -92,9 +118,7 @@ const Orders = () => {
             return new Date(date).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
+                day: "numeric"
             })
         } catch (error) {
             console.error("Invalid date format:", date, error);
@@ -118,6 +142,69 @@ const Orders = () => {
     const copyToClipboard = (text: string | number) => {
         navigator.clipboard.writeText(String(text));
         toast.success("Copied to clipboard!");
+    }
+
+    const getStatusIndex = (status: string) => {
+        return ORDER_STATUSES.indexOf(status as typeof ORDER_STATUSES[number]);
+    }
+
+    const isPastStatus = (currentStatus: string, targetStatus: string) => {
+        const currentIndex = getStatusIndex(currentStatus);
+        const targetIndex = getStatusIndex(targetStatus);
+        return targetIndex < currentIndex;
+    }
+
+    const handleStatusUpdate = async () => {
+        if (!selectedOrder || !selectedNewStatus) return;
+        try {
+            setActionLoading('updating');
+            const response = await fetch(`/api/admin/orders/${selectedOrder.id}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: selectedNewStatus }),
+            });
+            if (!response.ok) throw new Error('Failed to update status');
+            toast.success(`Order status updated to ${selectedNewStatus}`);
+            fetchOrders(currentPage);
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            toast.error('Failed to update order status');
+        } finally {
+            setActionLoading(null);
+            setShowStatusDialog(false);
+            setShowConfirmDialog(false);
+            setSelectedOrder(null);
+            setSelectedNewStatus(null);
+        }
+    }
+
+    const handleCancelOrder = async () => {
+        if (!selectedOrder) return;
+
+        try {
+            setActionLoading('cancelling');
+            const response = await fetch(`/api/admin/orders/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId: selectedOrder.id, newStatus: 'Cancelled' }),
+            });
+
+            if (!response.ok) throw new Error('Failed to cancel order');
+
+            toast.success('Order cancelled successfully');
+            fetchOrders(currentPage);
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            toast.error('Failed to cancel order');
+        } finally {
+            setActionLoading(null);
+            setShowCancelDialog(false);
+            setSelectedOrder(null);
+        }
     }
 
     if (loading) {
@@ -237,11 +324,28 @@ const Orders = () => {
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
                                             <DropdownMenuItem>View Details</DropdownMenuItem>
-                                            <DropdownMenuItem>Update Status</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-rose-600">Cancel Order</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => {
+                                                setSelectedOrder(order);
+                                                setShowStatusDialog(true);
+                                            }}>
+                                                Update Status
+                                            </DropdownMenuItem>
+                                            {order.delivery_status !== 'Delivered' && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem 
+                                                        className="text-rose-600"
+                                                        onClick={() => {
+                                                            setSelectedOrder(order);
+                                                            setShowCancelDialog(true);
+                                                        }}
+                                                    >
+                                                        Cancel Order
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -288,6 +392,94 @@ const Orders = () => {
                     </div>
                 </div>
             </Card>
+            {/* Status Update Dialog */}
+            <AlertDialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+                <AlertDialogContent className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Update Order Status</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Select the new status for order #{selectedOrder?.id}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="grid grid-cols-2 gap-2 py-4">
+                        {ORDER_STATUSES.map((status) => {
+                            const isPast = selectedOrder ? isPastStatus(selectedOrder.delivery_status, status) : false;
+                            return (
+                                <Button
+                                    key={status}
+                                    variant="outline"
+                                    className={`justify-start rounded-full ${
+                                        isPast 
+                                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                                            : getStatusColor(status)
+                                    }`}
+                                    disabled={isPast}
+                                    onClick={() => {
+                                        setSelectedNewStatus(status);
+                                        setShowConfirmDialog(true);
+                                    }}
+                                >
+                                    {status}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Confirmation Dialog for ALL status changes */}
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogContent className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to change the status of order #{selectedOrder?.id} to {selectedNewStatus}?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            onClick={() => {
+                                setShowConfirmDialog(false);
+                                setSelectedNewStatus(null);
+                            }}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleStatusUpdate}
+                            className="bg-yellow-600 hover:bg-yellow-700"
+                            disabled={actionLoading === 'updating'}
+                        >
+                            {actionLoading === 'updating' ? 'Updating...' : 'Yes, change status'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Cancel Order Dialog (from dropdown, not status) */}
+            <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <AlertDialogContent className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel order #{selectedOrder?.id}? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>No, keep order</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCancelOrder}
+                            className="bg-rose-600 hover:bg-rose-700"
+                            disabled={actionLoading === 'cancelling'}
+                        >
+                            {actionLoading === 'cancelling' ? 'Cancelling...' : 'Yes, cancel order'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
