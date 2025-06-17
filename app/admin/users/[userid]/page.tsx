@@ -106,23 +106,6 @@ interface UserData {
     totalSpent: string
 }
 
-const getStatusVariant = (status: string) => {
-    switch (status?.toLowerCase()) {
-        case 'completed':
-            return 'default'
-        case 'pending':
-            return 'secondary'
-        case 'processing':
-            return 'secondary'
-        case 'delivered':
-            return 'default'
-        case 'cancelled':
-            return 'destructive'
-        default:
-            return 'secondary'
-    }
-}
-
 const getRoleIcon = (role?: string) => {
     switch (role?.toLowerCase()) {
         case 'admin':
@@ -249,6 +232,7 @@ const UserProfile = () => {
                 draggable: true,
             })
         } catch (error) {
+            console.error("Error blocking user:", error)
             toast.error("Failed to block user. Please try again.", {
                 position: "top-right",
                 autoClose: 3000,
@@ -281,6 +265,7 @@ const UserProfile = () => {
                 draggable: true,
             })
         } catch (error) {
+            console.error("Error unblocking user:", error)
             toast.error("Failed to unblock user. Please try again.", {
                 position: "top-right",
                 autoClose: 3000,
@@ -615,7 +600,7 @@ const UserProfile = () => {
                                 <ShoppingBag className="h-12 w-12 text-gray-400 mb-4" />
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">No Orders Yet</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    This user hasn't placed any orders yet.
+                                    This user hasn&#39;t placed any orders yet.
                                 </p>
                             </div>
                         ) : (
