@@ -49,13 +49,18 @@ export async function GET(request: Request, { params }: { params: { userId: stri
                 SELECT 
                     o.id as order_id,
                     o.created_at,
+                    o.delivered_date,
+                    o.estimated_delivery_date,
                     o.payment_status,
                     o.delivery_status,
+                    o.tracking_number,
+                    o.shipping_address,
                     SUM(oi.quantity * oi.price_at_time) as total_spent
                 FROM orders o
                 LEFT JOIN order_items oi ON o.id = oi.order_id
                 WHERE o.user_id = $1
-                GROUP BY o.id, o.created_at, o.payment_status, o.delivery_status
+                GROUP BY o.id, o.created_at, o.delivered_date, o.estimated_delivery_date, 
+                    o.payment_status, o.delivery_status, o.tracking_number, o.shipping_address
             )
             SELECT 
                 ot.*,
@@ -72,7 +77,8 @@ export async function GET(request: Request, { params }: { params: { userId: stri
             FROM order_totals ot
             LEFT JOIN order_items oi ON ot.order_id = oi.order_id
             LEFT JOIN books b ON oi.book_id = b.id
-            GROUP BY ot.order_id, ot.created_at, ot.payment_status, ot.delivery_status, ot.total_spent
+            GROUP BY ot.order_id, ot.created_at, ot.delivered_date, ot.estimated_delivery_date,
+                ot.payment_status, ot.delivery_status, ot.tracking_number, ot.shipping_address, ot.total_spent
             ORDER BY ot.created_at DESC
         `;
 
@@ -81,6 +87,8 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 
         // Calculate total spent across all orders
         const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total_spent), 0);
+
+        console.log(`userInfo: ${JSON.stringify(userInfo)}, orders: ${JSON.stringify(orders)}, totalSpent: ${totalSpent}`);
 
         return NextResponse.json({ 
             userInfo, 

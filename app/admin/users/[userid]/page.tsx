@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,7 +38,6 @@ import {
     Ban,
     UserCheck,
     Settings,
-    Bell,
     Package,
     CreditCard,
     Truck,
@@ -45,8 +45,11 @@ import {
     Clock,
     XCircle,
     ArrowLeft,
+    ChevronDown,
+    ChevronUp,
 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import Link from "next/link"
 
 interface OrderItem {
     book_id: string
@@ -60,8 +63,12 @@ interface OrderItem {
 interface Order {
     order_id: string
     created_at: string
+    delivered_date?: string
+    estimated_delivery_date?: string
     payment_status: string
     delivery_status: string
+    tracking_number?: string
+    shipping_address?: string
     total_spent: number
     items: OrderItem[]
 }
@@ -71,12 +78,22 @@ interface UserInfo {
     firstName: string | null
     lastName: string | null
     username: string | null
-    emailAddresses: { emailAddress: string }[]
+    emailAddresses: {
+        id: string
+        emailAddress: string
+        verification: {
+            status: string
+            strategy: string
+        }
+    }[]
+    primaryEmailAddressId: string
     imageUrl: string
     createdAt: string
+    updatedAt: string
     lastSignInAt: string | null
     publicMetadata: {
         role?: string
+        status?: string
     }
     privateMetadata: {
         blocked?: boolean
@@ -106,8 +123,6 @@ const getStatusVariant = (status: string) => {
     }
 }
 
-
-
 const getRoleIcon = (role?: string) => {
     switch (role?.toLowerCase()) {
         case 'admin':
@@ -119,10 +134,29 @@ const getRoleIcon = (role?: string) => {
     }
 }
 
+const getDeliveryStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "order placed":
+            return <ShoppingBag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        case "processing":
+            return <Settings className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+        case "shipped":
+            return <Truck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        case "out for delivery":
+            return <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+        case "delivered":
+            return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+        case "cancelled":
+            return <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+        default:
+            return <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+    }
+}
+
 const getPaymentStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
         case "completed":
-            return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            return <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
         case "pending":
             return <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
         case "failed":
@@ -132,6 +166,49 @@ const getPaymentStatusIcon = (status: string) => {
     }
 }
 
+const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "active":
+            return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+        case "completed":
+        case "delivered":
+            return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+        case "banned":
+        case "blocked":
+        case "cancelled":
+        case "failed":
+            return "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300"
+        case "processing":
+        case "shipped":
+            return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+        case "order placed":
+            return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+        case "out for delivery":
+            return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+        default:
+            return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+    }
+}
+
+const getRoleBadge = (role: string) => {
+    switch (role.toLowerCase()) {
+        case "admin":
+            return "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
+        case "user":
+            return "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300"
+        default:
+            return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
+    }
+}
+
+const formatOrderDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    })
+}
+
 const UserProfile = () => {
     const params = useParams()
     const userId = params.userid as string
@@ -139,6 +216,83 @@ const UserProfile = () => {
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
+    const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+
+    const toggleOrderExpand = (orderId: string) => {
+        setExpandedOrders(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(orderId)) {
+                newSet.delete(orderId)
+            } else {
+                newSet.add(orderId)
+            }
+            return newSet
+        })
+    }
+
+    const handleBlockUser = async () => {
+        try {
+            setActionLoading('block')
+            const response = await fetch(`/api/admin/users/${userId}/block`, {
+                method: 'POST',
+            })
+            
+            if (!response.ok) throw new Error('Failed to block user')
+            
+            await fetchUserData(userId)
+            toast.success("User has been successfully blocked", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
+        } catch (error) {
+            toast.error("Failed to block user. Please try again.", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
+        } finally {
+            setActionLoading(null)
+        }
+    }
+
+    const handleUnblockUser = async () => {
+        try {
+            setActionLoading('unblock')
+            const response = await fetch(`/api/admin/users/${userId}/unblock`, {
+                method: 'POST',
+            })
+            
+            if (!response.ok) throw new Error('Failed to unblock user')
+            
+            await fetchUserData(userId)
+            toast.success("User has been successfully unblocked", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
+        } catch (error) {
+            toast.error("Failed to unblock user. Please try again.", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
+        } finally {
+            setActionLoading(null)
+        }
+    }
 
     const fetchUserData = async (userId: string) => {
         try {
@@ -169,93 +323,6 @@ const UserProfile = () => {
         }
     }, [userId])
 
-    const getStatusColor = (status: string) => {
-        switch (status.toLowerCase()) {
-            case "active":
-            case "completed":
-            case "delivered":
-                return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-            case "banned":
-            case "blocked":
-            case "cancelled":
-            case "failed":
-                return "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300"
-            case "locked":
-            case "processing":
-            case "shipped":
-                return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-            case "pending":
-                return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-            default:
-                return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-        }
-    }
-
-    const getRoleBadge = (role: string) => {
-        switch (role.toLowerCase()) {
-            case "admin":
-                return "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
-            case "user":
-                return "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300"
-            default:
-                return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
-        }
-    }
-
-    const formatOrderDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        })
-    }
-
-    const handleUserAction = async (action: string) => {
-        setActionLoading(action)
-        try {
-            const response = await fetch(`/api/admin/users/${userId}/actions`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ action }),
-            })
-
-            if (response.ok) {
-                // Refresh user data
-                fetchUserData(userId)
-            }
-        } catch (error) {
-            console.error("Error performing action:", error)
-        } finally {
-            setActionLoading(null)
-        }
-    }
-
-    const handleOrderStatusUpdate = async (orderId: string, status: string) => {
-        setActionLoading(`order-${orderId}`)
-        try {
-            const response = await fetch(`/api/admin/orders/${orderId}/status`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ status: status }),
-            })
-
-            if (response.ok) {
-                // Refresh user data
-                fetchUserData(userId)
-            }
-        } catch (error) {
-            console.error("Error updating order status:", error)
-        } finally {
-            setActionLoading(null)
-        }
-    }
-
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-[#F5F5DC] dark:bg-[#2b2b2b]">
@@ -280,391 +347,371 @@ const UserProfile = () => {
         )
     }
 
-    const { userInfo, orders, totalSpent } = userData
-    const role = userInfo.publicMetadata?.role || 'user'
-    const isBlocked = userInfo.privateMetadata?.blocked || false
-
     return (
-        <div className="min-h-screen bg-[#F5F5DC] dark:bg-[#2b2b2b]">
-            <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-                {/* Back Button - Mobile First */}
-                <div className="flex items-center space-x-4 mb-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex items-center space-x-2 hover:bg-white/50 dark:hover:bg-gray-700/50"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        <span className="hidden sm:inline">Back to Users</span>
+        <div className="container p-6 space-y-6 bg-[#F5F5DC] dark:bg-[#2b2b2b] min-h-screen">
+            {/* Header with back button */}
+            <div className="flex items-center gap-4 mb-6">
+                <Link href="/admin/users">
+                    <Button variant="ghost" size="icon">
+                        <ArrowLeft className="h-5 w-5" />
                     </Button>
-                </div>
+                </Link>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Profile</h1>
+            </div>
 
-                {/* Header - Responsive */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                        <Avatar className="h-16 w-16 sm:h-20 sm:w-20 mx-auto sm:mx-0 ring-2 ring-white/50 dark:ring-gray-600">
-                            <AvatarImage src={userInfo.imageUrl || "/placeholder.svg"} alt={userInfo.firstName || "User"} />
-                            <AvatarFallback className="text-lg sm:text-xl bg-white/80 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                                {userInfo.firstName?.[0]}
-                                {userInfo.lastName?.[0]}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="text-center sm:text-left">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                {userInfo.firstName} {userInfo.lastName}
-                            </h1>
-                            <p className="text-gray-700 dark:text-gray-300">@{userInfo.username}</p>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                                <Badge className={getRoleBadge(role)}>
-                                    {getRoleIcon(role)}
-                                    {role}
-                                </Badge>
-                                {isBlocked && (
-                                    <Badge variant="destructive">Blocked</Badge>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Admin Actions */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                disabled={actionLoading !== null}
-                                className="bg-white/80 dark:bg-gray-700/80 border-gray-300 dark:border-gray-600"
-                            >
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="end"
-                            className="w-56 bg-white/95 dark:bg-gray-800/95 border-gray-300 dark:border-gray-600"
-                        >
-                            <DropdownMenuLabel>User Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleUserAction("promote")}>
-                                <Shield className="mr-2 h-4 w-4" />
-                                Promote to Admin
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUserAction("demote")}>
-                                <UserIcon className="mr-2 h-4 w-4" />
-                                Demote to User
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleUserAction("activate")}>
-                                <UserCheck className="mr-2 h-4 w-4" />
-                                Activate Account
-                            </DropdownMenuItem>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                        <Ban className="mr-2 h-4 w-4" />
-                                        Ban User
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="mx-4 sm:mx-0 bg-white/95 dark:bg-gray-800/95 border-gray-300 dark:border-gray-600">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will ban the user and prevent them from accessing the platform. This action can be reversed
-                                            later.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleUserAction("ban")}>Ban User</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleUserAction("notify")}>
-                                <Bell className="mr-2 h-4 w-4" />
-                                Send Notification
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-                <Tabs defaultValue="overview" className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-3 bg-white/80 dark:bg-gray-700/80 border border-gray-300 dark:border-gray-600">
-                        <TabsTrigger
-                            value="overview"
-                            className="text-xs sm:text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600"
-                        >
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="orders"
-                            className="text-xs sm:text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600"
-                        >
-                            Orders ({orders.length})
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="activity"
-                            className="text-xs sm:text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600"
-                        >
-                            Activity
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="overview" className="space-y-4">
-                        {/* Stats Cards - Responsive Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">Total Spent</CardTitle>
-                                    <CreditCard className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">₹{totalSpent}</div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">Total Orders</CardTitle>
-                                    <ShoppingBag className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{orders.length}</div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg col-span-2 lg:col-span-1">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        Account Created
-                                    </CardTitle>
-                                    <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-sm text-gray-900 dark:text-gray-100">{formatDate(userInfo.createdAt)}</div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg col-span-2 lg:col-span-1">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">Last Sign In</CardTitle>
-                                    <UserIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                        {userInfo.lastSignInAt ? formatDate(userInfo.lastSignInAt) : "Never"}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* User Details */}
-                        <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg">
-                            <CardHeader>
-                                <CardTitle className="text-gray-900 dark:text-gray-100">User Information</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">User ID</label>
-                                        <p className="font-mono text-sm text-gray-900 dark:text-gray-100 break-all">{userInfo.id}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-                                        <p className="text-gray-900 dark:text-gray-100">{userInfo.username || "Not set"}</p>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-gray-300 dark:bg-gray-600" />
-
-                                <div>
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                                        <Mail className="inline h-4 w-4 mr-1" />
-                                        Email Addresses
-                                    </label>
-                                    <div className="space-y-2">
-                                        {userInfo.emailAddresses.map((email, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border border-gray-300 dark:border-gray-600 rounded-[0.5rem] bg-gray-50/80 dark:bg-gray-700/50 space-y-2 sm:space-y-0"
-                                            >
-                                                <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-                                                    <span className="text-gray-900 dark:text-gray-100 break-all">{email.emailAddress}</span>
-                                                    {index === 0 && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="text-xs w-fit bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+            {/* Main content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* User Info Card - Sticky */}
+                <div className="lg:sticky lg:top-6 lg:self-start lg:h-fit">
+                    <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle>User Information</CardTitle>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        {userData.userInfo.privateMetadata.blocked ? (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem
+                                                        onSelect={(e) => e.preventDefault()}
+                                                        className="text-green-600 dark:text-green-400"
+                                                    >
+                                                        <UserCheck className="h-4 w-4 mr-2" />
+                                                        Unblock User
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Unblock User</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to unblock this user? They will regain access to their account.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={handleUnblockUser}
+                                                            disabled={actionLoading === 'unblock'}
                                                         >
-                                                            Primary
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                                <Badge
-                                                    variant="default"
-                                                    className="text-xs w-fit bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                                >
+                                                            {actionLoading === 'unblock' ? 'Unblocking...' : 'Unblock'}
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        ) : (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem
+                                                        onSelect={(e) => e.preventDefault()}
+                                                        className="text-red-600 dark:text-red-400"
+                                                    >
+                                                        <Ban className="h-4 w-4 mr-2" />
+                                                        Block User
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Block User</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to block this user? They will lose access to their account.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={handleBlockUser}
+                                                            disabled={actionLoading === 'block'}
+                                                        >
+                                                            {actionLoading === 'block' ? 'Blocking...' : 'Block'}
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={userData.userInfo.imageUrl} />
+                                    <AvatarFallback>
+                                        {userData.userInfo.firstName?.[0]}{userData.userInfo.lastName?.[0]}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="text-lg font-semibold">
+                                        {userData.userInfo.firstName} {userData.userInfo.lastName}
+                                    </h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        @{userData.userInfo.username}
+                                    </p>
+                                    <Badge className={`mt-2 ${getRoleBadge(userData.userInfo.publicMetadata.role || 'user')}`}>
+                                        {getRoleIcon(userData.userInfo.publicMetadata.role)}
+                                        {userData.userInfo.publicMetadata.role || 'User'}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="space-y-4">
+                                {/* Email Section */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email Addresses</p>
+                                    {userData.userInfo.emailAddresses.map((email) => (
+                                        <div key={email.id} className="flex flex-wrap items-center gap-2">
+                                            <Mail className="h-4 w-4 text-gray-500" />
+                                            <span className="text-sm">{email.emailAddress}</span>
+                                            {email.id === userData.userInfo.primaryEmailAddressId && (
+                                                <Badge variant="secondary" className="text-xs rounded-full">
+                                                    Primary
+                                                </Badge>
+                                            )}
+                                            {email.verification.status === "verified" && (
+                                                <Badge variant="outline" className="text-xs rounded-full text-green-600 dark:text-green-400">
                                                     Verified
                                                 </Badge>
-                                            </div>
-                                        ))}
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Separator />
+
+                                {/* Account Information */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Account Information</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                            <span>Created</span>
+                                        </div>
+                                        <span>{formatDate(userData.userInfo.createdAt)}</span>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                            <span>Last Sign In</span>
+                                        </div>
+                                        <span>{userData.userInfo.lastSignInAt ? formatDate(userData.userInfo.lastSignInAt) : 'Never'}</span>
+
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                            <span>Updated</span>
+                                        </div>
+                                        <span>{formatDate(userData.userInfo.updatedAt)}</span>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
 
-                    <TabsContent value="orders" className="space-y-4">
-                        {orders.length === 0 ? (
-                            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg">
-                                <CardContent className="pt-6">
-                                    <div className="text-center">
-                                        <ShoppingBag className="h-12 w-12 text-gray-500 dark:text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">No Orders Found</h3>
-                                        <p className="text-gray-700 dark:text-gray-300">This user hasn't placed any orders yet.</p>
+                                <Separator />
+
+                                {/* User ID and Metadata */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">System Information</p>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Shield className="h-4 w-4 text-gray-500" />
+                                            <span>User ID:</span>
+                                            <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+                                                {userData.userInfo.id}
+                                            </code>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Shield className="h-4 w-4 text-gray-500" />
+                                            <span>Primary Email ID:</span>
+                                            <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+                                                {userData.userInfo.primaryEmailAddressId}
+                                            </code>
+                                        </div>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+
+                                <Separator />
+
+                                {/* Public Metadata */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Public Metadata</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-gray-500" />
+                                            <span>Role</span>
+                                        </div>
+                                        <Badge className={`${getRoleBadge(userData.userInfo.publicMetadata.role || 'user')} rounded-full`}>
+                                            {getRoleIcon(userData.userInfo.publicMetadata.role)}
+                                            {userData.userInfo.publicMetadata.role || 'User'}
+                                        </Badge>
+
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-gray-500" />
+                                            <span>Status</span>
+                                        </div>
+                                        <Badge 
+                                            className={`${getStatusColor(userData.userInfo.publicMetadata.status || 'active')} rounded-full`}
+                                        >
+                                            {userData.userInfo.publicMetadata.status === 'active' ? (
+                                                <CheckCircle className="h-3 w-3 mr-1" />
+                                            ) : (
+                                                <XCircle className="h-3 w-3 mr-1" />
+                                            )}
+                                            {userData.userInfo.publicMetadata.status || 'Active'}
+                                        </Badge>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Private Metadata */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Metadata</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-gray-500" />
+                                            <span>Blocked</span>
+                                        </div>
+                                        <Badge 
+                                            variant={userData.userInfo.privateMetadata.blocked ? 'destructive' : 'default'}
+                                            className="rounded-full"
+                                        >
+                                            {userData.userInfo.privateMetadata.blocked ? (
+                                                <Ban className="h-3 w-3 mr-1" />
+                                            ) : (
+                                                <CheckCircle className="h-3 w-3 mr-1" />
+                                            )}
+                                            {userData.userInfo.privateMetadata.blocked ? 'Blocked' : 'Active'}
+                                        </Badge>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Financial Information */}
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Financial Information</p>
+                                    <div className="flex items-center gap-2">
+                                        <ShoppingBag className="h-4 w-4 text-gray-500" />
+                                        <span className="text-sm">Total Spent: ₹{userData.totalSpent}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Orders Section */}
+                <Card className="lg:col-span-2 bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 h-fit">
+                    <CardHeader>
+                        <CardTitle>Order History</CardTitle>
+                        <CardDescription>Recent orders and their status</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-fit">
+                        {userData.orders.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <ShoppingBag className="h-12 w-12 text-gray-400 mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">No Orders Yet</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    This user hasn't placed any orders yet.
+                                </p>
+                            </div>
                         ) : (
                             <div className="space-y-4">
-                                {orders.map((order) => (
-                                    <Card
-                                        key={order.order_id}
-                                        className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg"
-                                    >
-                                        <CardHeader>
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                                                <div>
-                                                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                                                        Order #{order.order_id}
-                                                    </CardTitle>
-                                                    <CardDescription className="text-gray-700 dark:text-gray-300">
-                                                        {formatOrderDate(order.created_at)}
-                                                    </CardDescription>
+                                {userData.orders.map((order) => (
+                                    <Card key={order.order_id} className="bg-gray-50 dark:bg-gray-900/50">
+                                        <CardContent className="p-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">Order #{order.order_id}</p>
+                                                    <p className="text-xs text-gray-500">Ordered on {formatOrderDate(order.created_at)}</p>
+                                                    {order.estimated_delivery_date && (
+                                                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                            Estimated delivery: {formatOrderDate(order.estimated_delivery_date)}
+                                                        </p>
+                                                    )}
+                                                    {order.delivery_status.toLowerCase() === "delivered" && order.delivered_date && (
+                                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                                                            Delivered on {formatOrderDate(order.delivered_date)}
+                                                        </p>
+                                                    )}
+                                                    {order.tracking_number && (
+                                                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                            Tracking: {order.tracking_number}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                                                    <Badge className={getStatusVariant(order.payment_status)}>
-                                                        <Truck className="h-3 w-3 mr-1" />
-                                                        {order.payment_status}
-                                                    </Badge>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                disabled={actionLoading === `order-${order.order_id}`}
-                                                                className="w-full sm:w-auto bg-white/80 dark:bg-gray-700/80 border-gray-300 dark:border-gray-600"
-                                                            >
-                                                                <Settings className="h-4 w-4" />
-                                                                <span className="ml-2 sm:hidden">Update Status</span>
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent
-                                                            align="end"
-                                                            className="bg-white/95 dark:bg-gray-800/95 border-gray-300 dark:border-gray-600"
-                                                        >
-                                                            <DropdownMenuLabel>Update Status</DropdownMenuLabel>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem onClick={() => handleOrderStatusUpdate(order.order_id, "processing")}>
-                                                                Processing
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleOrderStatusUpdate(order.order_id, "shipped")}>
-                                                                Shipped
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleOrderStatusUpdate(order.order_id, "delivered")}>
-                                                                Delivered
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleOrderStatusUpdate(order.order_id, "cancelled")}>
-                                                                Cancelled
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-4">
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                                                    <div className="flex items-center space-x-2">
+                                                <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={`${getStatusColor(order.payment_status)} rounded-full px-3 py-1 w-fit`}
+                                                    >
                                                         {getPaymentStatusIcon(order.payment_status)}
-                                                        <span className="text-sm text-gray-900 dark:text-gray-100">Status: {order.payment_status}</span>
-                                                    </div>
-                                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                        ₹{order.total_spent}
-                                                    </div>
-                                                </div>
-
-                                                <Separator className="bg-gray-300 dark:bg-gray-600" />
-
-                                                <div className="space-y-2">
-                                                    <h4 className="font-medium flex items-center text-gray-900 dark:text-gray-100">
-                                                        <Package className="h-4 w-4 mr-2" />
-                                                        Items ({order.items.length})
-                                                    </h4>
-                                                    {order.items.map((item, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50/80 dark:bg-gray-700/50 rounded space-y-2 sm:space-y-0"
-                                                        >
-                                                            <div className="flex-1">
-                                                                <p className="font-medium text-gray-900 dark:text-gray-100">{item.title}</p>
-                                                                <p className="text-sm text-gray-700 dark:text-gray-300">by {item.author}</p>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="font-medium text-gray-900 dark:text-gray-100">₹{item.subtotal}</p>
-                                                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                                                    Qty: {item.quantity} × ₹{item.price_at_time}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                        <span className="ml-1.5">{order.payment_status}</span>
+                                                    </Badge>
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={`${getStatusColor(order.delivery_status)} rounded-full px-3 py-1 w-fit`}
+                                                    >
+                                                        {getDeliveryStatusIcon(order.delivery_status)}
+                                                        <span className="ml-1.5">{order.delivery_status}</span>
+                                                    </Badge>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => toggleOrderExpand(order.order_id)}
+                                                        className="h-8 w-8 flex-shrink-0"
+                                                    >
+                                                        {expandedOrders.has(order.order_id) ? (
+                                                            <ChevronUp className="h-4 w-4" />
+                                                        ) : (
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
                                                 </div>
                                             </div>
+                                            {expandedOrders.has(order.order_id) && (
+                                                <>
+                                                    {order.shipping_address && (
+                                                        <div className="mb-4">
+                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Shipping Address</p>
+                                                            <p className="text-sm mt-1">{order.shipping_address}</p>
+                                                        </div>
+                                                    )}
+                                                    <div className="space-y-2">
+                                                        {order.items.map((item) => (
+                                                            <div key={item.book_id} className="flex items-center justify-between text-sm">
+                                                                <div>
+                                                                    <p className="font-medium">{item.title}</p>
+                                                                    <p className="text-gray-500">by {item.author}</p>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <p>₹{item.price_at_time} x {item.quantity}</p>
+                                                                    <p className="font-medium">₹{item.subtotal}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <Separator className="my-3" />
+                                                    <div className="flex justify-between items-center">
+                                                        <p className="text-sm text-gray-500">Total</p>
+                                                        <p className="font-semibold">₹{order.total_spent}</p>
+                                                    </div>
+                                                </>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))}
                             </div>
                         )}
-                    </TabsContent>
-
-                    <TabsContent value="activity" className="space-y-4">
-                        <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-600 shadow-lg">
-                            <CardHeader>
-                                <CardTitle className="text-gray-900 dark:text-gray-100">Recent Activity</CardTitle>
-                                <CardDescription className="text-gray-700 dark:text-gray-300">
-                                    User activity and account changes
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-gray-900 dark:text-gray-100">Account created</p>
-                                            <p className="text-xs text-gray-700 dark:text-gray-300">{formatDate(userInfo.createdAt)}</p>
-                                        </div>
-                                    </div>
-                                    {userInfo.lastSignInAt && (
-                                        <div className="flex items-start space-x-4">
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-gray-900 dark:text-gray-100">Last sign in</p>
-                                                <p className="text-xs text-gray-700 dark:text-gray-300">{formatDate(userInfo.lastSignInAt)}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {orders.map((order) => (
-                                        <div key={order.order_id} className="flex items-start space-x-4">
-                                            <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-gray-900 dark:text-gray-100">Order #{order.order_id} placed</p>
-                                                <p className="text-xs text-gray-700 dark:text-gray-300">{formatOrderDate(order.created_at)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )
 }
 
 export default UserProfile
+

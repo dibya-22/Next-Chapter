@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from '@clerk/nextjs'
 import Script from "next/script";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -78,6 +80,7 @@ export default function RootLayout({
           >
             <Navbar />
             {children}
+            <ToastContainer />
           </ThemeProvider>
         </body>
       </html>
