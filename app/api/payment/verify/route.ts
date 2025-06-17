@@ -125,7 +125,7 @@ export async function POST(request: Request) {
         const orderItemsQuery = `
             WITH updated_order AS (
                 UPDATE orders 
-                SET payment_status = 'completed', delivery_status = 'Processing'
+                SET payment_status = 'completed', delivery_status = 'processing'
                 WHERE payment_id = $1 AND user_id = $2
                 RETURNING id
             )

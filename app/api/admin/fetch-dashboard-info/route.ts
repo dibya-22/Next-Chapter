@@ -59,21 +59,23 @@ export async function GET() {
             "SELECT COALESCE(SUM(amount), 0) as monthly_revenue FROM payments WHERE status = 'completed' AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW())"
         );
 
+        const refundedPayments = await client.query(`Select COALESCE(SUM(amount), 0) as refunded_payments FROM payments WHERE status = 'refunded'`);
+
         console.log("Payments Data:", payments.rows[0]);
 
         //Order Data
         const orders = await client.query(`
             SELECT 
                 COUNT(*) as total_orders,
-                COUNT(CASE WHEN payment_status = 'completed' AND delivery_status = 'Delivered' THEN 1 END) as delivered_orders,
+                COUNT(CASE WHEN delivery_status = 'Delivered' THEN 1 END) as delivered_orders,
                 COUNT(CASE 
-                    WHEN payment_status = 'completed' 
+                    WHEN payment_status IN ('completed', 'refunded') 
                     AND delivery_status NOT IN ('Delivered', 'Cancelled')
                     THEN 1 
                 END) as pending_orders,
                 COUNT(CASE WHEN delivery_status = 'Cancelled' THEN 1 END) as cancelled_orders
             FROM orders 
-            WHERE payment_status = 'completed'
+            WHERE payment_status IN ('completed', 'refunded')
         `);
 
         console.log("Orders Data:", {
@@ -101,6 +103,7 @@ export async function GET() {
             totalRevenue: Number(payments.rows[0]?.total_revenue || 0),
             totalPayments: Number(payments.rows[0]?.total_payments || 0),
             monthlyRevenue: Number(monthlyPayments.rows[0]?.monthly_revenue || 0),
+            refundedPayments: Number(refundedPayments.rows[0]?.refunded_payments || 0),
             totalOrders: Number(orders.rows[0]?.total_orders || 0),
             deliveredOrders: Number(orders.rows[0]?.delivered_orders || 0),
             pendingOrders: Number(orders.rows[0]?.pending_orders || 0),

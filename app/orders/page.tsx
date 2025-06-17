@@ -159,6 +159,7 @@ const Order = () => {
 
                             {isExpanded && (
                                 <div className="p-5">
+                                    {order.delivery_status !== "Cancelled" ? 
                                     <div className="mb-6">
                                         <OrderStatusBar
                                             currentStatus={
@@ -175,6 +176,15 @@ const Order = () => {
                                             <span className="font-medium">{formatDate(order.estimated_delivery_date)}</span>
                                         </div>
                                     </div>
+                                    :
+                                    <div className='p-5 flex flex-col items-center justify-center text-center'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-red-500 mb-3">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Order Cancelled</h3>
+                                        <p className="text-gray-600 dark:text-gray-400 text-sm">This order has been cancelled.</p>
+                                    </div>
+                                }
 
                                     <div className="address">
                                         <h3 className="text-lg font-bold mb-2">Shipping Address</h3>

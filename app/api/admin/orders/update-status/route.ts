@@ -21,8 +21,12 @@ export async function POST(request: Request) {
 
         let updateQuery = '';
         let params: any[] = [];
+
         if (newStatus === 'Delivered') {
             updateQuery = `UPDATE orders SET delivery_status = $1, delivered_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`;
+            params = [newStatus, orderId];
+        } else if (newStatus === 'Cancelled') {
+            updateQuery = `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', updated_at = NOW() WHERE id = $2 RETURNING *`;
             params = [newStatus, orderId];
         } else {
             updateQuery = `UPDATE orders SET delivery_status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`;

@@ -20,6 +20,7 @@ interface DashboardData {
     totalRevenue: number;
     totalPayments: number;
     monthlyRevenue: number;
+    refundedPayments: number;
     totalOrders: number;
     deliveredOrders: number;
     pendingOrders: number;
@@ -78,6 +79,7 @@ export default function DashboardPage() {
         totalRevenue: 0,
         totalPayments: 0,
         monthlyRevenue: 0,
+        refundedPayments: 0,
         totalOrders: 0,
         deliveredOrders: 0,
         pendingOrders: 0,
@@ -142,6 +144,14 @@ export default function DashboardPage() {
             description: `${getMonth()}'s revenue`,
             cardClass: "bg-purple-200 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800",
             iconClass: "text-purple-600 dark:text-purple-400",
+        },
+        {
+            title: "Refunded Payments",
+            value: `${(dashboardData?.refundedPayments || 0).toLocaleString()}`,
+            icon: CalendarDays,
+            description: "Refunded payments",
+            cardClass: "bg-red-200 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+            iconClass: "text-red-600 dark:text-red-400",
         }
     ]
 
