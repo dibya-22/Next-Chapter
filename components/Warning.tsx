@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 
 const Warning = () => {
-    const [isVisible, setIsVisible] = useState(false); // change this in the time of production to true
+    const [isVisible, setIsVisible] = useState(true); // change this in the time of production to true
 
     const toggleVisibility = () => {
         setIsVisible(!isVisible);
