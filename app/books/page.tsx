@@ -82,7 +82,7 @@ const Books = () => {
                 } else {
                     setSearchResultsBooks(data.books || []);
                 }
-            } catch (error) {
+            } catch {
                 setSearchResultsBooks([]);
             }
         }
@@ -104,7 +104,7 @@ const Books = () => {
                 } else {
                     setSearchResultsBooks(data.books || []);
                 }
-            } catch (error) {
+            } catch {
                 setSearchResultsBooks([]);
             } finally {
                 setDeepSearching(false);
@@ -141,7 +141,7 @@ const Books = () => {
                 );
                 
                 setSearchResultsBooks(uniqueResults);
-            } catch (error) {
+            } catch {
                 setSearchResultsBooks([]);
             } finally {
                 setDeepSearching(false);
