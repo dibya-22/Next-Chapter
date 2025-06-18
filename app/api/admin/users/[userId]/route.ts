@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
-export async function GET(request: Request, { params }: { params: { userId: string } }) {
+export async function GET(
+    _: Request,
+    context: { params: { userId: string } }
+) {
     const client = await pool.connect();
     const { userId } = await auth();
 
@@ -17,8 +20,7 @@ export async function GET(request: Request, { params }: { params: { userId: stri
     }
 
     try {
-        const resolvedParams = await params;
-        const requestedUserId = resolvedParams.userId;
+        const requestedUserId = context.params.userId;
 
         // Validate that requestedUserId is provided
         if (!requestedUserId) {
