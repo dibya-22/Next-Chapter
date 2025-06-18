@@ -1,6 +1,24 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-export default clerkMiddleware();
+const isProtectedRoute = createRouteMatcher([
+    '/admin(.*)',
+    '/api/admin(.*)',
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+    if (isProtectedRoute(req)) {
+        const { userId } = await auth();
+
+        if (!userId) {
+            return NextResponse.redirect(new URL('https://present-krill-46.accounts.dev/sign-in', req.url));
+        }
+
+        if (userId !== process.env.ADMIN_USER_ID) {
+            return NextResponse.redirect(new URL('/unauthorized', req.url));
+        }
+    }
+});
 
 export const config = {
     matcher: [
