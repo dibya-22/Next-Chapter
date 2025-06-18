@@ -11,6 +11,7 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMonth } from '@/lib/utils';
+import { toast } from "react-toastify";
 
 
 interface DashboardData {
@@ -30,6 +31,7 @@ interface DashboardData {
     totalStock: number;
     outOfStock: number;
     totalCategories: number;
+    recentOrders: any[];
 }
 
 function MetricCardSkeleton() {
@@ -89,6 +91,7 @@ export default function DashboardPage() {
         totalStock: 0,
         outOfStock: 0,
         totalCategories: 0,
+        recentOrders: []
     });
     const [error, setError] = useState<string | null>(null);
 
@@ -246,8 +249,8 @@ export default function DashboardPage() {
                 }
                 const data = await response.json();
                 setDashboardData(data);
-            } catch (error) {
-                setError('Failed to load dashboard data');
+            } catch (err) {
+                toast.error('Failed to load dashboard data');
             }
         };
 
@@ -393,6 +396,42 @@ export default function DashboardPage() {
                 metrics={booksMetrics}
                 gridCols="md:grid-cols-2 lg:grid-cols-4"
             />
+
+            <Separator className="my-4 bg-gray-200 dark:bg-gray-700" />
+
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <table className="min-w-full">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Order ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                            {dashboardData.recentOrders.map((order) => (
+                                <tr key={order.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{order.id}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{order.customer_name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">₹{order.amount}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span className={`px-2 py-1 rounded-full text-xs ${
+                                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {order.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }

@@ -1,84 +1,140 @@
-'use client'
-import { useState } from 'react'
-import React from 'react'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+"use client"
 
+import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { toast } from "react-toastify";
+
+interface Book {
+    id: string;
+    title: string;
+    author: string;
+    price: number;
+    stock: number;
+    category: string;
+    image_url: string;
+}
 
 export default function BooksPage() {
+    const { userId, isLoaded } = useAuth();
+    const [books, setBooks] = useState<Book[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchType, setSearchType] = useState("title");
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [books, setBooks] = useState([]);
-    const [error, setError] = useState('');
+    useEffect(() => {
+        const fetchBooks = async () => {
+            if (!userId || !isLoaded) return;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
-    }
+            try {
+                const response = await fetch('/api/admin/books');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch books');
+                }
+                const data = await response.json();
+                setBooks(data);
+            } catch (err) {
+                toast.error('Failed to load books');
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    const handleSubmit = (e: React.FormEvent, searchType: string) => {
-        e.preventDefault();
-        console.log('Search Query:', searchQuery, '\nSearch Type:', searchType);
-        setSearchQuery('');
-        setDropdownOpen(false);
-        handleSearch();
-    }
+        fetchBooks();
+    }, [userId, isLoaded]);
 
     const handleSearch = async () => {
-        if (!searchQuery) return;
+        if (!searchQuery.trim()) {
+            const response = await fetch('/api/admin/books');
+            const data = await response.json();
+            setBooks(data);
+            return;
+        }
 
         try {
-            const response = await fetch(`/api/admin/fetch-books?query=${encodeURIComponent(searchQuery)}&type=${searchType}`);
+            const response = await fetch(`/api/admin/books/search?query=${searchQuery}&type=${searchType}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch books');
+                throw new Error('Search failed');
             }
             const data = await response.json();
-            setBooks(data.books || []);
-        } catch (error) {
-            setError('Failed to fetch books');
+            setBooks(data);
+        } catch (err) {
+            toast.error('Search failed');
         }
     };
 
     return (
-        <div className="h-[calc(100vh-14vh)] flex flex-col items-center ">
-            <h1 className='text-3xl font-bold my-10 underline'>Manage Books</h1>
-            <form className='flex items-center gap-5'>
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-2xl font-bold">Books Management</h1>
+                <button
+                    onClick={() => window.location.href = '/admin/books/add'}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                    Add New Book
+                </button>
+            </div>
+
+            <div className="mb-6 flex gap-4">
                 <input
-                    value={searchQuery}
-                    onChange={(e) => handleChange(e)}
                     type="text"
-                    id="search"
-                    name="search"
-                    className="w-[30vw] px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:border-gray-500"   
-                    placeholder="Search for books..."
-                    required
+                    placeholder="Search books..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 px-4 py-2 border rounded"
                 />
+                <select
+                    value={searchType}
+                    onChange={(e) => setSearchType(e.target.value)}
+                    className="px-4 py-2 border rounded"
+                >
+                    <option value="title">Title</option>
+                    <option value="author">Author</option>
+                    <option value="category">Category</option>
+                </select>
+                <button
+                    onClick={handleSearch}
+                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                >
+                    Search
+                </button>
+            </div>
 
-                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                    <DropdownMenuTrigger disabled={!searchQuery} className='bg-slate-50 hover:bg-[#e9e9e3] text-[#2B2B2B] dark:bg-[#4b4848] dark:hover:bg-[#575555] dark:text-[#F5F5DC] px-5 py-2  transform transition-all active:scale-110 cursor-pointer disabled:cursor-not-allowed'>
-                        Search By
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end' className='bg-slate-50 dark:bg-[#4b4848] dark:text-[#F5F5DC] p-2'>
-                        <DropdownMenuItem onClick={(e) => handleSubmit(e, 'title')} className='bg-slate-50 hover:bg-[#e9e9e3] text-[#2B2B2B] dark:bg-[#4b4848] dark:hover:bg-[#575555] dark:text-[#F5F5DC] cursor-pointer'>
-                            Title
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => handleSubmit(e, 'author')} className='bg-slate-50 hover:bg-[#e9e9e3] text-[#2B2B2B] dark:bg-[#4b4848] dark:hover:bg-[#575555] dark:text-[#F5F5DC] cursor-pointer'>
-                            Author
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => handleSubmit(e, 'isbn')} className='bg-slate-50 hover:bg-[#e9e9e3] text-[#2B2B2B] dark:bg-[#4b4848] dark:hover:bg-[#575555] dark:text-[#F5F5DC] cursor-pointer'>
-                            ISBN
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => handleSubmit(e, 'category')} className='bg-slate-50 hover:bg-[#e9e9e3] text-[#2B2B2B] dark:bg-[#4b4848] dark:hover:bg-[#575555] dark:text-[#F5F5DC] cursor-pointer'>
-                            Category
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-            </form>
+            {isLoading ? (
+                <div className="text-center">Loading...</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {books.map((book) => (
+                        <div key={book.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                            <img
+                                src={book.image_url}
+                                alt={book.title}
+                                className="w-full h-48 object-cover"
+                            />
+                            <div className="p-4">
+                                <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 mb-2">By {book.author}</p>
+                                <p className="text-gray-600 dark:text-gray-300 mb-2">Category: {book.category}</p>
+                                <p className="text-gray-600 dark:text-gray-300 mb-2">Price: ₹{book.price}</p>
+                                <p className="text-gray-600 dark:text-gray-300 mb-4">Stock: {book.stock}</p>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => window.location.href = `/admin/books/edit/${book.id}`}
+                                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = `/admin/books/delete/${book.id}`}
+                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-    )
+    );
 }

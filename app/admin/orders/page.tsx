@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { toast } from "react-toastify";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { ToastContainer, Bounce } from 'react-toastify';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,14 +28,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface Order {
-    id: string | number
-    user_id: string | number
-    total_amount: number
-    payment_status: string
-    delivery_status: string
-    created_at: string | Date
-    updated_at: string | Date
-    delivered_date: string | Date
+    id: string;
+    user_id: string;
+    total_amount: number;
+    status: string;
+    created_at: string;
+    user_name: string;
+    user_email: string;
 }
 
 const ORDER_STATUSES = [
@@ -45,9 +46,10 @@ const ORDER_STATUSES = [
     "Cancelled"
 ] as const;
 
-const Orders = () => {
+export default function OrdersPage() {
+    const { userId, isLoaded } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalOrders, setTotalOrders] = useState(0);
     const itemsPerPage = 10;
@@ -58,30 +60,51 @@ const Orders = () => {
     const [selectedNewStatus, setSelectedNewStatus] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    const fetchOrders = async (page = 1) => {
+    const fetchOrders = async () => {
+        if (!userId || !isLoaded) return;
+
         try {
-            setLoading(true);
-            const response = await fetch(`/api/admin/orders/get-orders?page=${page}&limit=${itemsPerPage}`);
-            const data = await response.json();
-            if (!Array.isArray(data.orders)) {
-                setOrders([]);
-                setTotalOrders(0);
-                return;
+            const response = await fetch('/api/admin/orders');
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders');
             }
-            setOrders(data.orders);
-            setTotalOrders(data.total);
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-            setOrders([]);
-            setTotalOrders(0);
+            const data = await response.json();
+            setOrders(data);
+        } catch (err) {
+            toast.error('Failed to load orders');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        fetchOrders(currentPage);
-    }, [currentPage]);
+        fetchOrders();
+    }, [userId, isLoaded]);
+
+    const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+        try {
+            const response = await fetch('/api/admin/orders/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId, status: newStatus }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update order status');
+            }
+
+            setOrders(orders.map(order => 
+                order.id === orderId 
+                    ? { ...order, status: newStatus }
+                    : order
+            ));
+            toast.success('Order status updated successfully');
+        } catch (err) {
+            toast.error('Failed to update order status');
+        }
+    };
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -153,23 +176,12 @@ const Orders = () => {
         return targetIndex < currentIndex;
     }
 
-    const handleStatusUpdate = async () => {
+    const handleStatusUpdateDialog = async () => {
         if (!selectedOrder || !selectedNewStatus) return;
         try {
             setActionLoading('updating');
-            const response = await fetch(`/api/admin/orders/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    orderId: selectedOrder.id, 
-                    newStatus: selectedNewStatus 
-                }),
-            });
-            if (!response.ok) throw new Error('Failed to update status');
-            toast.success(`Order status updated to ${selectedNewStatus}`);
-            fetchOrders(currentPage);
+            await handleStatusUpdate(selectedOrder.id, selectedNewStatus);
+            fetchOrders();
         } catch (error) {
             console.error('Error updating order status:', error);
             toast.error('Failed to update order status');
@@ -187,18 +199,8 @@ const Orders = () => {
 
         try {
             setActionLoading('cancelling');
-            const response = await fetch(`/api/admin/orders/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ orderId: selectedOrder.id, newStatus: 'Cancelled' }),
-            });
-
-            if (!response.ok) throw new Error('Failed to cancel order');
-
-            toast.success('Order cancelled successfully');
-            fetchOrders(currentPage);
+            await handleStatusUpdate(selectedOrder.id, 'Cancelled');
+            fetchOrders();
         } catch (error) {
             console.error('Error cancelling order:', error);
             toast.error('Failed to cancel order');
@@ -209,7 +211,7 @@ const Orders = () => {
         }
     }
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="w-full p-3">
                 <Card className="overflow-hidden border-border">
@@ -270,7 +272,7 @@ const Orders = () => {
             <Card className="overflow-hidden border-border">
                 <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
                     <h1 className="text-2xl font-bold">Orders</h1>
-                    <Button onClick={() => fetchOrders(currentPage)} variant="outline" size="sm" className="rounded-[0.5rem]">
+                    <Button onClick={() => fetchOrders()} variant="outline" size="sm" className="rounded-[0.5rem]">
                         Refresh
                     </Button>
                 </CardHeader>
@@ -301,23 +303,23 @@ const Orders = () => {
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <span
-                                        className={`${getStatusColor(order.payment_status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                                        className={`${getStatusColor(order.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
                                     >
-                                        {order.payment_status}
+                                        {order.status}
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <span
-                                        className={`${getStatusColor(order.delivery_status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                                        className={`${getStatusColor(order.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
                                     >
-                                        {order.delivery_status}
+                                        {order.status}
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground text-center">
                                     {formatDate(order.created_at)}
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground text-center">
-                                    {order.delivery_status === 'Delivered' ? formatDate(order.delivered_date) : 'N/A'}
+                                    {order.status === 'Delivered' ? formatDate(order.created_at) : 'N/A'}
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <DropdownMenu>
@@ -334,7 +336,7 @@ const Orders = () => {
                                             }}>
                                                 Update Status
                                             </DropdownMenuItem>
-                                            {order.delivery_status !== 'Delivered' && (
+                                            {order.status !== 'Delivered' && (
                                                 <>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem 
@@ -405,7 +407,7 @@ const Orders = () => {
                     </AlertDialogHeader>
                     <div className="grid grid-cols-2 gap-2 py-4">
                         {ORDER_STATUSES.map((status) => {
-                            const isPast = selectedOrder ? isPastStatus(selectedOrder.delivery_status, status) : false;
+                            const isPast = selectedOrder ? isPastStatus(selectedOrder.status, status) : false;
                             return (
                                 <Button
                                     key={status}
@@ -451,7 +453,7 @@ const Orders = () => {
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={handleStatusUpdate}
+                            onClick={handleStatusUpdateDialog}
                             className="bg-yellow-600 hover:bg-yellow-700"
                             disabled={actionLoading === 'updating'}
                         >
@@ -485,5 +487,3 @@ const Orders = () => {
         </div>
     )
 }
-
-export default Orders
