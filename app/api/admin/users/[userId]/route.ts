@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
 export async function GET(
-    _: Request,
-    context: { params: { userId: string } }
+    request: NextRequest,
+    { params }: { params: { userId: string } }
 ) {
     const client = await pool.connect();
     const { userId } = await auth();
@@ -20,7 +20,7 @@ export async function GET(
     }
 
     try {
-        const requestedUserId = context.params.userId;
+        const requestedUserId = params.userId;
 
         // Validate that requestedUserId is provided
         if (!requestedUserId) {
