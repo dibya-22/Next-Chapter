@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
@@ -72,11 +72,23 @@ const Books = () => {
 
 
     // Search
-    const getSearchResults = async () => {
-        const searchResults = await fetch(`/api/books?type=${BookType.SEARCH_RESULTS}&search=${search}`)
-        const data = await searchResults.json()
-        setSearchResultsBooks(data)
-    }
+    const getSearchResults = useCallback(async () => {
+        if (search) {
+            try {
+                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
+                const data = await res.json();
+                if (data.error) {
+                    console.error('Search error:', data.error);
+                    setSearchResultsBooks([]);
+                } else {
+                    setSearchResultsBooks(data.books || []);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                setSearchResultsBooks([]);
+            }
+        }
+    }, [search]);
 
     const handleDeepSearch = async () => {
         if (!deepSearching) {
@@ -86,20 +98,15 @@ const Books = () => {
 
         if(search){
             try {
-                console.log('Starting deep search for:', search);
                 const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
                 const data = await res.json();
                 
-                console.log('Deep search response:', data);
-                
                 if (data.error) {
-                    console.error('Search error:', data.error);
                     setSearchResultsBooks([]);
                 } else {
                     setSearchResultsBooks(data.books || []);
                 }
             } catch (error) {
-                console.error('Deep search error:', error);
                 setSearchResultsBooks([]);
             } finally {
                 setDeepSearching(false);
@@ -115,7 +122,6 @@ const Books = () => {
 
         if(search){
             try {
-                console.log('Starting extensive search for:', search);
                 const searchTerms = [
                     search,
                     search.split(' ').join(' OR '),
@@ -136,10 +142,8 @@ const Books = () => {
                     index === self.findIndex((b) => b.isbn === book.isbn)
                 );
                 
-                console.log('Extensive search response:', uniqueResults);
                 setSearchResultsBooks(uniqueResults);
             } catch (error) {
-                console.error('Extensive search error:', error);
                 setSearchResultsBooks([]);
             } finally {
                 setDeepSearching(false);
@@ -153,12 +157,12 @@ const Books = () => {
 
     useEffect(() => {
         if (search) {
-            getSearchResults()
-            setDeepSearching(false)
-            setDeepSearchAttempted(false)
-            setExtensiveSearchAttempted(false)
+            getSearchResults();
+            setDeepSearching(false);
+            setDeepSearchAttempted(false);
+            setExtensiveSearchAttempted(false);
         }
-    }, [search])
+    }, [search, getSearchResults]);
 
     return (
         <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto my-10 px-4 sm:px-6 lg:px-8 mt-[11vh] space-y-8 sm:space-y-12">

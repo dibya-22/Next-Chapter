@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 
+interface OrderStatusUpdate {
+    orderId: string;
+    status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+}
+
 export async function POST(request: Request) {
     const client = await pool.connect();
     const { userId } = await auth();
@@ -14,23 +19,23 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { orderId, newStatus } = await request.json();
-        if (!orderId || !newStatus) {
-            return NextResponse.json({ error: "Missing orderId or newStatus" }, { status: 400 });
+        const { orderId, status }: OrderStatusUpdate = await request.json();
+        if (!orderId || !status) {
+            return NextResponse.json({ error: "Missing orderId or status" }, { status: 400 });
         }
 
         let updateQuery = '';
-        let params: any[] = [];
+        let params: string[] = [];
 
-        if (newStatus === 'Delivered') {
+        if (status === 'Delivered') {
             updateQuery = `UPDATE orders SET delivery_status = $1, delivered_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`;
-            params = [newStatus, orderId];
-        } else if (newStatus === 'Cancelled') {
+            params = [status, orderId];
+        } else if (status === 'Cancelled') {
             updateQuery = `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', updated_at = NOW() WHERE id = $2 RETURNING *`;
-            params = [newStatus, orderId];
+            params = [status, orderId];
         } else {
             updateQuery = `UPDATE orders SET delivery_status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`;
-            params = [newStatus, orderId];
+            params = [status, orderId];
         }
 
         const result = await client.query(updateQuery, params);

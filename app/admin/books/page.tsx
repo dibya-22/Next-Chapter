@@ -13,6 +13,8 @@ export default function BooksPage() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [books, setBooks] = useState([]);
+    const [error, setError] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
@@ -23,8 +25,23 @@ export default function BooksPage() {
         console.log('Search Query:', searchQuery, '\nSearch Type:', searchType);
         setSearchQuery('');
         setDropdownOpen(false);
-        // Here you can add logic to handle the search query, like fetching books from an API
+        handleSearch();
     }
+
+    const handleSearch = async () => {
+        if (!searchQuery) return;
+
+        try {
+            const response = await fetch(`/api/admin/fetch-books?query=${encodeURIComponent(searchQuery)}&type=${searchType}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch books');
+            }
+            const data = await response.json();
+            setBooks(data.books || []);
+        } catch (error) {
+            setError('Failed to fetch books');
+        }
+    };
 
     return (
         <div className="h-[calc(100vh-14vh)] flex flex-col items-center ">

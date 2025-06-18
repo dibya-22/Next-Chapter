@@ -8,11 +8,11 @@ import { CartItem } from '@/lib/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import CheckoutForm from '@/components/cart/checkout-form'
-
+import { toast } from 'react-toastify';
 
 declare global {
     interface Window {
-        Razorpay: unknown;
+        Razorpay: any;
     }
 }
 
@@ -84,47 +84,29 @@ const Cart = () => {
         }
     };
 
-
-    interface RazorpayPaymentResponse {
-        razorpay_order_id: string;
-        razorpay_payment_id: string;
-        razorpay_signature: string;
-    }
-    const handlePaymentSuccess = async (response: RazorpayPaymentResponse) => {
+    const handlePaymentSuccess = async (response: any) => {
         try {
-            console.log('Payment success response:', response); // Debug log
-
-            const verifyResponse = await fetch('/api/payment/verify', {
+            const verificationResponse = await fetch('/api/payment/verify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature
-                })
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature,
+                }),
             });
 
-            const verifyData = await verifyResponse.json();
-            
-            if (!verifyResponse.ok) {
-                console.error('Payment verification failed:', {
-                    status: verifyResponse.status,
-                    statusText: verifyResponse.statusText,
-                    data: verifyData,
-                    response: response
-                });
-                throw new Error(verifyData.error || verifyData.details || 'Payment verification failed');
+            const verificationData = await verificationResponse.json();
+            if (verificationData.success) {
+                toast.success('Payment successful!');
+                router.push('/orders');
+            } else {
+                toast.error('Payment verification failed');
             }
-
-            // Success - clear cart and redirect
-            setCartItems([]);
-            router.push('/orders');
         } catch (error) {
-            console.error('Payment verification error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                response: response
-            });
-            setError(error instanceof Error ? error.message : 'Payment verification failed. Please contact support.');
+            toast.error('Error verifying payment');
         }
     };
 

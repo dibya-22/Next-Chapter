@@ -90,6 +90,7 @@ export default function DashboardPage() {
         outOfStock: 0,
         totalCategories: 0,
     });
+    const [error, setError] = useState<string | null>(null);
 
     // User Data
     const usersMetrics = [
@@ -235,48 +236,23 @@ export default function DashboardPage() {
     ]
 
     useEffect(() => {
-        if (isLoaded) {
-            console.log("Auth state:", { userId, isLoaded });
-            fetchData();
-        }
-    }, [isLoaded, userId]);
+        const fetchDashboardData = async () => {
+            if (!userId || !isLoaded) return;
 
-    const fetchData = async () => {
-        try {
-            console.log("Fetching dashboard data...");
-            const response = await fetch("/api/admin/fetch-dashboard-info", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error:", {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorData
-                });
-                throw new Error(`HTTP error! status: ${response.status}`);
+            try {
+                const response = await fetch('/api/admin/fetch-dashboard-info');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+                const data = await response.json();
+                setDashboardData(data);
+            } catch (error) {
+                setError('Failed to load dashboard data');
             }
+        };
 
-            const data = await response.json();
-            console.log("Received dashboard data:", data);
-
-            if (data.error) {
-                console.error("API returned error:", data.error);
-                return;
-            }
-
-            setDashboardData(data);
-            console.log("Updated dashboard state:", data);
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
+        fetchDashboardData();
+    }, [userId, isLoaded]);
 
     function MetricCard({
         title,

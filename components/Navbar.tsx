@@ -31,8 +31,9 @@ const Navbar = () => {
     const [cartCount, setCartCount] = useState(0);
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
-    const [isSearchBarOn, setIsSearchBarOn] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -80,12 +81,8 @@ const Navbar = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const toggleCategoryMenu = () => {
-        setIsCategoryMenuOpen(!isCategoryMenuOpen);
-    };
-
     const handleSearch = () => {
-        setIsSearchBarOn(!isSearchBarOn);
+        setIsSearchOpen(!isSearchOpen);
         pop();
     }
 
@@ -133,7 +130,7 @@ const Navbar = () => {
                 </Link>
             </div>
 
-            <div className={`search-bar ${isSearchBarOn ? "visible opacity-100 translate-x-0" : "invisible opacity-0 translate-x-60"} ${isSearchFocused ? "scale-105" : "scale-100"} transform  transition-all duration-500 ease-in-out`}>
+            <div className={`search-bar ${isSearchOpen ? "visible opacity-100 translate-x-0" : "invisible opacity-0 translate-x-60"} ${isSearchFocused ? "scale-105" : "scale-100"} transform  transition-all duration-500 ease-in-out`}>
                 <form onSubmit={handleSearchSubmit} className='relative flex items-center'>
                     <input
                         type="text"
@@ -189,7 +186,7 @@ const Navbar = () => {
                                     className='dark:invert'
                                 />
                             </Link>
-                            <button onClick={handleSearch} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchBarOn ? "hidden" : "block"}`}>
+                            <button onClick={handleSearch} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
                                 <Image
                                     src="/icons/search.png"
                                     width={30}
