@@ -28,7 +28,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const isCurrentlyDisabled = currentStatusResult.rows[0].is_disabled;
+        const currentStatus = currentStatusResult.rows[0].is_disabled;
 
         // Update user status
         const result = await pool.query(
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({
-            message: `User ${isCurrentlyDisabled ? 'enabled' : 'disabled'} successfully`,
+            message: `User ${currentStatus ? 'enabled' : 'disabled'} successfully`,
             user: result.rows[0]
         });
     } catch (error) {

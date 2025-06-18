@@ -73,11 +73,6 @@ const Navbar = () => {
     }
 
     const toggleMenu = () => {
-        if (isMenuOpen) {
-            closemenu();
-        } else {
-            openmenu();
-        }
         setIsMenuOpen(!isMenuOpen);
     };
 

@@ -7,6 +7,14 @@ interface OrderStatusUpdate {
     status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
 }
 
+interface OrderRecord {
+    id: string;
+    delivery_status: string;
+    payment_status: string;
+    delivered_date: string | null;
+    updated_at: string;
+}
+
 export async function POST(request: Request) {
     const client = await pool.connect();
     const { userId } = await auth();
@@ -42,10 +50,12 @@ export async function POST(request: Request) {
         if (result.rows.length === 0) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });
         }
-        return NextResponse.json({ success: true, order: result.rows[0] });
+
+        const updatedOrder: OrderRecord = result.rows[0];
+        return NextResponse.json(updatedOrder);
     } catch (error) {
         console.error("Error updating order status:", error);
-        return NextResponse.json({ error: "Failed to update order status" }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     } finally {
         client.release();
     }

@@ -78,13 +78,11 @@ const Books = () => {
                 const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
                 const data = await res.json();
                 if (data.error) {
-                    console.error('Search error:', data.error);
                     setSearchResultsBooks([]);
                 } else {
                     setSearchResultsBooks(data.books || []);
                 }
             } catch (error) {
-                console.error('Search error:', error);
                 setSearchResultsBooks([]);
             }
         }
