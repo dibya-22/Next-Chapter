@@ -23,7 +23,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface Order {
@@ -158,12 +157,15 @@ const Orders = () => {
         if (!selectedOrder || !selectedNewStatus) return;
         try {
             setActionLoading('updating');
-            const response = await fetch(`/api/admin/orders/${selectedOrder.id}/update-status`, {
+            const response = await fetch(`/api/admin/orders/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ status: selectedNewStatus }),
+                body: JSON.stringify({ 
+                    orderId: selectedOrder.id, 
+                    newStatus: selectedNewStatus 
+                }),
             });
             if (!response.ok) throw new Error('Failed to update status');
             toast.success(`Order status updated to ${selectedNewStatus}`);

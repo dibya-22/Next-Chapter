@@ -233,7 +233,7 @@ const Cart = () => {
             
             {/* When Cart is empty */}
             {cartItems.length === 0 && (
-                <div className="w-fit mx-auto my-32 px-10 py-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 justify-center items-center border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer transition-all duration-300 ease-out shadow-lg hover:shadow-2xl hover:-translate-y-3 scale-110 transform-gpu group space-y-4">
+                <div className="w-fit mx-auto my-20 px-10 py-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 justify-center items-center border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer transition-all duration-300 ease-out shadow-lg hover:shadow-2xl hover:-translate-y-3 scale-110 transform-gpu group space-y-4">
                     <h1 className='text-4xl font-bold text-center opacity-90'>Your Cart is Empty</h1>
                     <div className='flex flex-col items-center justify-center gap-2'>
                         <p className='text-gray-600 dark:text-gray-400'>Your shopping cart is waiting.</p>
