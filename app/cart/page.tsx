@@ -12,7 +12,7 @@ import { toast } from 'react-toastify';
 
 declare global {
     interface Window {
-        Razorpay: any;
+        Razorpay: unknown;
     }
 }
 
@@ -84,7 +84,12 @@ const Cart = () => {
         }
     };
 
-    const handlePaymentSuccess = async (response: any) => {
+    interface RazorpayPaymentResponse {
+        razorpay_payment_id: string;
+        razorpay_order_id: string;
+        razorpay_signature: string;
+    }
+    const handlePaymentSuccess = async (response: RazorpayPaymentResponse) => {
         try {
             const verificationResponse = await fetch('/api/payment/verify', {
                 method: 'POST',
@@ -105,7 +110,7 @@ const Cart = () => {
             } else {
                 toast.error('Payment verification failed');
             }
-        } catch (error) {
+        } catch {
             toast.error('Error verifying payment');
         }
     };

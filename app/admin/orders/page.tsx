@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "react-toastify";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -60,7 +60,7 @@ export default function OrdersPage() {
     const [selectedNewStatus, setSelectedNewStatus] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         if (!userId || !isLoaded) return;
 
         try {
@@ -69,17 +69,18 @@ export default function OrdersPage() {
                 throw new Error('Failed to fetch orders');
             }
             const data = await response.json();
-            setOrders(data);
-        } catch (err) {
+            setOrders(data.orders);
+            setTotalOrders(data.total);
+        } catch {
             toast.error('Failed to load orders');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [userId, isLoaded]);
 
     useEffect(() => {
         fetchOrders();
-    }, [userId, isLoaded]);
+    }, [fetchOrders]);
 
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
         try {
@@ -101,7 +102,7 @@ export default function OrdersPage() {
                     : order
             ));
             toast.success('Order status updated successfully');
-        } catch (err) {
+        } catch {
             toast.error('Failed to update order status');
         }
     };

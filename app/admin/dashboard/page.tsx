@@ -14,6 +14,13 @@ import { getMonth } from '@/lib/utils';
 import { toast } from "react-toastify";
 
 
+interface RecentOrder {
+    id: string | number;
+    customer_name: string;
+    amount: number;
+    status: string;
+}
+
 interface DashboardData {
     totalUsers: number;
     activeUsers: number;
@@ -31,7 +38,7 @@ interface DashboardData {
     totalStock: number;
     outOfStock: number;
     totalCategories: number;
-    recentOrders: any[];
+    recentOrders: RecentOrder[];
 }
 
 function MetricCardSkeleton() {
@@ -93,7 +100,6 @@ export default function DashboardPage() {
         totalCategories: 0,
         recentOrders: []
     });
-    const [error, setError] = useState<string | null>(null);
 
     // User Data
     const usersMetrics = [
@@ -249,8 +255,10 @@ export default function DashboardPage() {
                 }
                 const data = await response.json();
                 setDashboardData(data);
-            } catch (err) {
+            } catch {
                 toast.error('Failed to load dashboard data');
+            } finally {
+                setIsLoading(false);
             }
         };
 

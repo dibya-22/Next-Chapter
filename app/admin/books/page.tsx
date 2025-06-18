@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 interface Book {
     id: string;
@@ -32,7 +33,7 @@ export default function BooksPage() {
                 }
                 const data = await response.json();
                 setBooks(data);
-            } catch (err) {
+            } catch {
                 toast.error('Failed to load books');
             } finally {
                 setIsLoading(false);
@@ -57,7 +58,7 @@ export default function BooksPage() {
             }
             const data = await response.json();
             setBooks(data);
-        } catch (err) {
+        } catch {
             toast.error('Search failed');
         }
     };
@@ -105,10 +106,14 @@ export default function BooksPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {books.map((book) => (
                         <div key={book.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                            <img
+                            <Image
                                 src={book.image_url}
                                 alt={book.title}
+                                width={400}
+                                height={192}
                                 className="w-full h-48 object-cover"
+                                priority={false}
+                                loading="lazy"
                             />
                             <div className="p-4">
                                 <h3 className="text-lg font-semibold mb-2">{book.title}</h3>

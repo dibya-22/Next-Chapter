@@ -32,16 +32,12 @@ const Navbar = () => {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     // Sounds
     const [switchon] = useSound('/sounds/switch_on.mp3', { volume: 0.5 });
     const [switchoff] = useSound('/sounds/switch_off.mp3', { volume: 0.5 });
-    const [openmenu] = useSound('/sounds/open-menu.wav', { volume: 0.5 });
-    const [closemenu] = useSound('/sounds/close-menu.wav', { volume: 0.2 });
     const [pop] = useSound('/sounds/pop.wav', { volume: 0.5 });
 
     useEffect(() => {
