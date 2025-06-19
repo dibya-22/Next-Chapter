@@ -22,7 +22,7 @@ export async function GET() {
         client.release();
         
         return NextResponse.json(result.rows);
-    } catch   {
+    } catch (error) {
         console.error('Error fetching cart:', error);
         return NextResponse.json({ error: "Error fetching cart items" }, { status: 500 });
     }
