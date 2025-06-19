@@ -118,6 +118,7 @@ const getRoleIcon = (role?: string) => {
 }
 
 const getDeliveryStatusIcon = (status: string) => {
+    if(!status) return <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
     switch (status.toLowerCase()) {
         case "order placed":
             return <ShoppingBag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -137,6 +138,7 @@ const getDeliveryStatusIcon = (status: string) => {
 }
 
 const getPaymentStatusIcon = (status: string) => {
+    if(!status) return <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
     switch (status.toLowerCase()) {
         case "completed":
             return <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -150,6 +152,7 @@ const getPaymentStatusIcon = (status: string) => {
 }
 
 const getStatusColor = (status: string) => {
+    if (!status) return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
     switch (status.toLowerCase()) {
         case "active":
             return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
@@ -174,6 +177,7 @@ const getStatusColor = (status: string) => {
 }
 
 const getRoleBadge = (role: string) => {
+    if (!role) return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
     switch (role.toLowerCase()) {
         case "admin":
             return "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
@@ -635,16 +639,16 @@ const UserProfile = () => {
                                                 <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                                                     <Badge 
                                                         variant="outline" 
-                                                        className={`${getStatusColor(order.payment_status)} rounded-full px-3 py-1 w-fit`}
+                                                        className={`${getStatusColor(order.payment_status || '')} rounded-full px-3 py-1 w-fit`}
                                                     >
-                                                        {getPaymentStatusIcon(order.payment_status)}
+                                                        {getPaymentStatusIcon(order.payment_status || '')}
                                                         <span className="ml-1.5">{order.payment_status}</span>
                                                     </Badge>
                                                     <Badge 
                                                         variant="outline" 
-                                                        className={`${getStatusColor(order.delivery_status)} rounded-full px-3 py-1 w-fit`}
+                                                        className={`${getStatusColor(order.delivery_status || '')} rounded-full px-3 py-1 w-fit`}
                                                     >
-                                                        {getDeliveryStatusIcon(order.delivery_status)}
+                                                        {getDeliveryStatusIcon(order.delivery_status || '')}
                                                         <span className="ml-1.5">{order.delivery_status}</span>
                                                     </Badge>
                                                     <Button
@@ -670,7 +674,7 @@ const UserProfile = () => {
                                                         </div>
                                                     )}
                                                     <div className="space-y-2">
-                                                        {order.items.map((item) => (
+                                                        {(order.items || []).map((item) => (
                                                             <div key={item.book_id} className="flex items-center justify-between text-sm">
                                                                 <div>
                                                                     <p className="font-medium">{item.title}</p>

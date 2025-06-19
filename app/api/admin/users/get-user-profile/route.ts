@@ -23,38 +23,64 @@ export async function GET(req: NextRequest) {
             const clerk = await clerkClient();
             const user = await clerk.users.getUser(targetUserId);
 
-            const query = `
-            SELECT 
-            COALESCE(SUM(oi.price_at_time * oi.quantity), 0) as total_spent,
-            COUNT(DISTINCT o.id) as total_orders,
-            json_agg(
-            DISTINCT jsonb_build_object(
-                'order_id', o.id,
-                'created_at', o.created_at,
-                'delivery_status', o.delivery_status,
-              'total', COALESCE(SUM(oi.price_at_time * oi.quantity), 0)
-            )
-            ) as orders
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
-        WHERE o.user_id = $1
-        GROUP BY o.user_id
-`;
+            const ordersQuery = `
+                SELECT 
+                    o.id AS order_id,
+                    o.created_at,
+                    o.delivered_date,
+                    o.estimated_delivery_date,
+                    o.payment_status,
+                    o.delivery_status,
+                    o.tracking_number,
+                    o.shipping_address,
+                    COALESCE(SUM(oi.price_at_time * oi.quantity), 0) AS total_spent,
+                    json_agg(
+                        jsonb_build_object(
+                        'book_id', b.id,
+                        'title', b.title,
+                        'author', b.authors,
+                        'quantity', oi.quantity,
+                        'price_at_time', oi.price_at_time,
+                        'subtotal', oi.price_at_time * oi.quantity
+                        )
+                    ) FILTER (WHERE oi.id IS NOT NULL) AS items
+                FROM orders o
+                LEFT JOIN order_items oi ON o.id = oi.order_id
+                LEFT JOIN books b ON oi.book_id = b.id
+                WHERE o.user_id = $1
+                GROUP BY o.id
+                ORDER BY o.created_at DESC
+            `;
 
-            const result = await client.query(query, [targetUserId]);
+            const ordersResult = await client.query(ordersQuery, [targetUserId]);
+
+            // Calculate total spent
+            const totalSpent = ordersResult.rows.reduce((sum, order) => sum + Number(order.total_spent || 0), 0);
 
             const userData = {
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.emailAddresses[0]?.emailAddress,
-                username: user.username,
-                imageUrl: user.imageUrl,
-                createdAt: user.createdAt,
-                lastSignInAt: user.lastSignInAt,
-                status: user.publicMetadata.status ? 'blocked' : 'active',
-                role: user.publicMetadata.role || 'user',
-                ...result.rows[0],
+                userInfo: {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    username: user.username,
+                    emailAddresses: user.emailAddresses.map(e => ({
+                        id: e.id,
+                        emailAddress: e.emailAddress,
+                        verification: e.verification,
+                    })),
+                    primaryEmailAddressId: user.primaryEmailAddressId,
+                    imageUrl: user.imageUrl,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    lastSignInAt: user.lastSignInAt,
+                    publicMetadata: user.publicMetadata || {},
+                    privateMetadata: user.privateMetadata || {},
+                },
+                orders: ordersResult.rows.map(order => ({
+                    ...order,
+                    items: order.items || [],
+                })),
+                totalSpent: totalSpent.toString(),
             };
 
             return NextResponse.json(userData);
