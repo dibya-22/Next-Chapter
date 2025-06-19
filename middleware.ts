@@ -7,14 +7,6 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-    // Add authorized parties check for production
-    if (process.env.NODE_ENV === 'production') {
-        const authorizedParties = [process.env.NEXT_PUBLIC_APP_URL];
-        if (!authorizedParties.includes(req.headers.get('origin') || '')) {
-            return NextResponse.json({ error: 'Unauthorized origin' }, { status: 403 });
-        }
-    }
-
     if (isProtectedRoute(req)) {
         const { userId } = await auth();
 
