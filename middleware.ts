@@ -48,7 +48,10 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
 });
 
-async function handleProtectedRoute(auth: any, req: Request) {
+async function handleProtectedRoute(
+    auth: () => Promise<{ userId?: string | null }>,
+    req: Request
+) {
     const { userId } = await auth();
 
     if (!userId) {
