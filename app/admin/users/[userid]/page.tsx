@@ -216,8 +216,10 @@ const UserProfile = () => {
     const handleBlockUser = async () => {
         try {
             setActionLoading('block')
-            const response = await fetch(`/api/admin/users/${userId}/block`, {
+            const response = await fetch('/api/admin/users/update-user-status', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, isDisabled: true }),
             })
             
             if (!response.ok) throw new Error('Failed to block user')
@@ -249,8 +251,10 @@ const UserProfile = () => {
     const handleUnblockUser = async () => {
         try {
             setActionLoading('unblock')
-            const response = await fetch(`/api/admin/users/${userId}/unblock`, {
+            const response = await fetch('/api/admin/users/update-user-status', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, isDisabled: false }),
             })
             
             if (!response.ok) throw new Error('Failed to unblock user')
@@ -281,7 +285,7 @@ const UserProfile = () => {
 
     const fetchUserData = async (userId: string) => {
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const response = await fetch(`/api/admin/users/get-user-profile?userId=${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

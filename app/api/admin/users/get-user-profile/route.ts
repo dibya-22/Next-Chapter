@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { pool } from '@/lib/db';
 
-export async function GET(
-    req: NextRequest,
-    context: { params: { userId: string } }
-) {
+export async function GET(req: NextRequest) {
     try {
         const { userId: adminId } = await auth();
 
@@ -13,7 +10,13 @@ export async function GET(
             return NextResponse.json({ error: "Not authorized" }, { status: 401 });
         }
 
-        const targetUserId = context.params.userId;
+        const searchParams = req.nextUrl.searchParams;
+        const targetUserId = searchParams.get('userId');
+
+        if (!targetUserId) {
+            return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+        }
+
         const client = await pool.connect();
 
         try {
@@ -63,4 +66,4 @@ export async function GET(
         console.error("Error fetching user details:", error);
         return NextResponse.json({ error: "Failed to fetch user details" }, { status: 500 });
     }
-}
+} 
