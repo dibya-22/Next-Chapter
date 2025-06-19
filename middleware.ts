@@ -6,6 +6,10 @@ const isProtectedRoute = createRouteMatcher([
     '/api/admin(.*)',
 ]);
 
+const isApiRoute = createRouteMatcher([
+    '/api/(.*)',
+]);
+
 // Helper function to add CORS headers
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -14,20 +18,34 @@ const corsHeaders = {
 };
 
 export default clerkMiddleware(async (auth, req) => {
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
+    // Handle preflight requests for API routes
+    if (isApiRoute(req) && req.method === 'OPTIONS') {
         return new NextResponse(null, { headers: corsHeaders });
     }
 
-    // Add CORS headers to all responses
-    const response = isProtectedRoute(req) ? await handleProtectedRoute(auth, req) : new NextResponse(null);
-    
-    // Add CORS headers
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-        response.headers.set(key, value);
-    });
+    // Handle protected routes
+    if (isProtectedRoute(req)) {
+        const response = await handleProtectedRoute(auth, req);
+        if (isApiRoute(req)) {
+            // Add CORS headers only for API routes
+            Object.entries(corsHeaders).forEach(([key, value]) => {
+                response.headers.set(key, value);
+            });
+        }
+        return response;
+    }
 
-    return response;
+    // For API routes, add CORS headers
+    if (isApiRoute(req)) {
+        const response = NextResponse.next();
+        Object.entries(corsHeaders).forEach(([key, value]) => {
+            response.headers.set(key, value);
+        });
+        return response;
+    }
+
+    // For all other routes, just pass through
+    return NextResponse.next();
 });
 
 async function handleProtectedRoute(auth: any, req: Request) {
@@ -41,14 +59,12 @@ async function handleProtectedRoute(auth: any, req: Request) {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    return new NextResponse(null);
+    return NextResponse.next();
 }
 
 export const config = {
     matcher: [
-        // Skip Next.js internals and all static files, unless found in search params
-        '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        // Always run for API routes
-        '/(api|trpc)(.*)',
+        // Skip Next.js internals and all static files
+        '/((?!_next/static|_next/image|favicon.ico).*)',
     ],
 };
