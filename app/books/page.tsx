@@ -47,9 +47,15 @@ function Books() {
                 fetch(`/api/books?type=${BookType.NEW_ARRIVALS}&limit=10`),
             ])
 
-            setBestSellersBooks(await bestSellers.json())
-            setTopRatedBooks(await topRated.json())
-            setNewArrivalsBooks(await newArrivals.json())
+            const [bestSellersData, topRatedData, newArrivalsData] = await Promise.all([
+                bestSellers.json(),
+                topRated.json(),
+                newArrivals.json()
+            ]);
+
+            setBestSellersBooks(bestSellersData.data || [])
+            setTopRatedBooks(topRatedData.data || [])
+            setNewArrivalsBooks(newArrivalsData.data || [])
 
             const [fiction, nonFiction, selfHelp, business] = await Promise.all([
                 fetch(`/api/books?type=${BookType.CATEGORIES}&limit=5&category=fiction`),
@@ -57,11 +63,19 @@ function Books() {
                 fetch(`/api/books?type=${BookType.CATEGORIES}&limit=5&category=self-Help`),
                 fetch(`/api/books?type=${BookType.CATEGORIES}&limit=5&category=business`),
             ])
+
+            const [fictionData, nonFictionData, selfHelpData, businessData] = await Promise.all([
+                fiction.json(),
+                nonFiction.json(),
+                selfHelp.json(),
+                business.json()
+            ]);
+
             setCategoriesBooks({
-                fiction: await fiction.json(),
-                nonFiction: await nonFiction.json(),
-                selfHelp: await selfHelp.json(),
-                business: await business.json(),
+                fiction: fictionData.data || [],
+                nonFiction: nonFictionData.data || [],
+                selfHelp: selfHelpData.data || [],
+                business: businessData.data || [],
             })
         } catch (error) {
             console.error("Error fetching books:", error)
@@ -75,12 +89,12 @@ function Books() {
     const getSearchResults = useCallback(async () => {
         if (search) {
             try {
-                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
+                const res = await fetch(`/api/books?type=${BookType.SEARCH_RESULTS}&search=${encodeURIComponent(search)}&limit=20`);
                 const data = await res.json();
                 if (data.error) {
                     setSearchResultsBooks([]);
                 } else {
-                    setSearchResultsBooks(data.books || []);
+                    setSearchResultsBooks(data.data || []);
                 }
             } catch {
                 setSearchResultsBooks([]);
@@ -96,13 +110,13 @@ function Books() {
 
         if(search){
             try {
-                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
+                const res = await fetch(`/api/books?type=${BookType.SEARCH_RESULTS}&search=${encodeURIComponent(search)}&limit=50`);
                 const data = await res.json();
                 
                 if (data.error) {
                     setSearchResultsBooks([]);
                 } else {
-                    setSearchResultsBooks(data.books || []);
+                    setSearchResultsBooks(data.data || []);
                 }
             } catch {
                 setSearchResultsBooks([]);
@@ -129,10 +143,10 @@ function Books() {
                 
                 const allResults = [];
                 for (const term of searchTerms) {
-                    const res = await fetch(`/api/search-books?query=${encodeURIComponent(term)}`);
+                    const res = await fetch(`/api/books?type=${BookType.SEARCH_RESULTS}&search=${encodeURIComponent(term)}&limit=20`);
                     const data = await res.json();
-                    if (data.books) {
-                        allResults.push(...data.books);
+                    if (data.data) {
+                        allResults.push(...data.data);
                     }
                 }
                 
@@ -173,7 +187,7 @@ function Books() {
                 <>
                     {/* Search Results */}
                     {search && (
-                        <section className="search-results">
+                        <section className="results">
                             {searchResultsBooks.length > 0 ? (
                                 <>
                                     <SectionHeader title={`Search Results for "${search}"`} />

@@ -73,31 +73,31 @@ export async function GET(request: Request) {
 
         if (!type || !Object.values(BookType).includes(type)) {
             return NextResponse.json(
-                { error: 'Invalid book type' },
+                { error: 'Invalid book type', data: [] },
                 { status: 400 }
             );
         }
 
         if (type === BookType.SEARCH_RESULTS && !search) {
             return NextResponse.json(
-                { error: 'Search query is required for search results' },
+                { error: 'Search query is required for search results', data: [] },
                 { status: 400 }
             );
         }
 
         if (type === BookType.CATEGORIES && !category) {
             return NextResponse.json(
-                { error: 'Category is required for category search' },
+                { error: 'Category is required for category search', data: [] },
                 { status: 400 }
             );
         }
 
         const books = await getBooksFromDB(limit, type, search, category);
-        return NextResponse.json(books);
+        return NextResponse.json({ data: books });
     } catch (error)  {
         console.error('Error fetching books:', error);
         return NextResponse.json(
-            { error: 'Failed to fetch books' },
+            { error: 'Failed to fetch books', data: [] },
             { status: 500 }
         );
     }

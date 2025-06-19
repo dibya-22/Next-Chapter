@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 
         if (!data.items || data.items.length === 0) {
             return NextResponse.json(
-                { error: 'No books found' },
+                { error: 'No books found', data: [] },
                 { status: 404 }
             );
         }
@@ -191,13 +191,13 @@ export async function GET(request: Request) {
         console.log('Errors encountered:', errors.length);
 
         return NextResponse.json({
-            books: savedBooks,
+            data: savedBooks,
             errors: errors.length > 0 ? errors : undefined
         });
     } catch (error) {
         console.error('Error searching books:', error);
         return NextResponse.json(
-            { error: 'Failed to search books' },
+            { error: 'Failed to search books', data: [] },
             { status: 500 }
         );
     } finally {
