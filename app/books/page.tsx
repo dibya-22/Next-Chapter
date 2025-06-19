@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
@@ -18,7 +18,7 @@ const LoadingDots = () => {
     )
 }
 
-const Books = () => {
+function Books() {
     const searchParams = useSearchParams()
     const search = searchParams.get("search")
 
@@ -280,4 +280,10 @@ const Books = () => {
     )
 }
 
-export default Books
+export default function BooksPage() {
+    return (
+        <Suspense fallback={<div>Loading Books...</div>}>
+            <Books />
+        </Suspense>
+    )
+}
