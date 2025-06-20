@@ -94,7 +94,7 @@ export async function GET(request: Request) {
 
         const books = await getBooksFromDB(limit, type, search, category);
         return NextResponse.json({ data: books });
-    } catch (error)  {
+    } catch (error) {
         console.error('Error fetching books:', error);
         return NextResponse.json(
             { error: 'Failed to fetch books', data: [] },
