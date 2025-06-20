@@ -1,31 +1,31 @@
-import { NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import pool from "@/lib/db"
 import { auth } from "@clerk/nextjs/server";
 
 export async function DELETE(request: Request) {
     const { userId } = await auth();
-    if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return new Response("Unauthorized", { status: 401 });
 
     try {
-        const { bookId } = await request.json();
-        if (!bookId) {
-            return NextResponse.json({ error: "Missing bookId" }, { status: 400 });
-        }
+        const { id } = await request.json();
+        const client = await pool.connect();
 
-        const result = await pool.query(
-            "DELETE FROM cart WHERE user_id = $1 AND book_id = $2 RETURNING *",
-            [userId, bookId]
-        );
+        const query = `
+            DELETE FROM cart 
+            WHERE user_id = $1 AND book_id = $2
+            RETURNING *
+        `;
+        
+        const result = await client.query(query, [userId, parseInt(id)]);
+        client.release();
 
         if (result.rows.length === 0) {
-            return NextResponse.json({ error: "Item not found in cart" }, { status: 404 });
+            return new Response("Item not found in cart", { status: 404 });
         }
 
-        return NextResponse.json(result.rows[0]);
+        return new Response(JSON.stringify(result.rows[0]), { status: 200 });
     } catch (error) {
-        console.error('Error removing item from cart:', error);
-        return NextResponse.json({ error: "Error removing item from cart" }, { status: 500 });
+        console.error('Error removing from cart:', error);
+        return new Response("Error removing cart item", { status: 500 });
     }
 } 
