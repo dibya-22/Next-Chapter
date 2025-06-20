@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import pool from "@/lib/db"
 import { auth } from "@clerk/nextjs/server";
 import { CartItem } from "@/lib/types";
@@ -9,7 +9,7 @@ interface PostgresError extends Error {
 
 export async function POST(request: Request) {
     const { userId } = await auth();
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     try {
         const client = await pool.connect();
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
             `;
             const result = await client.query(updateQuery, [quantity, userId, parseInt(id)]);
             client.release();
-            return new Response(JSON.stringify(result.rows[0]), { status: 200 });
+            return new NextResponse(JSON.stringify(result.rows[0]), { status: 200 });
         }
 
         // Insert new item if it doesn't exist
@@ -61,14 +61,14 @@ export async function POST(request: Request) {
         ]);
 
         client.release();
-        return new Response(JSON.stringify(result.rows[0]), { status: 201 });
+        return new NextResponse(JSON.stringify(result.rows[0]), { status: 201 });
 
     } catch (error) {
         console.error('Error adding to cart:', error);
         const pgError = error as PostgresError;
         if (pgError.code === '23503') { // Foreign key violation
-            return new Response("Book not found", { status: 404 });
+            return new NextResponse("Book not found", { status: 404 });
         }
-        return new Response("Error adding item to cart", { status: 500 });
+        return new NextResponse("Error adding item to cart", { status: 500 });
     }
 }

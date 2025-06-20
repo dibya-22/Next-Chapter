@@ -8,11 +8,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
         }
 
-        // Optionally, add admin check here if needed
-        // const { userId: adminId } = await auth();
-        // if (!adminId || adminId !== process.env.ADMIN_USER_ID) {
-        //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        // }
+        const { userId: adminId } = await auth();
+        if (!adminId || adminId !== process.env.ADMIN_USER_ID) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         const clerk = await clerkClient();
         await clerk.users.updateUser(userId, {
