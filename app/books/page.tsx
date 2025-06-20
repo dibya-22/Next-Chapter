@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
@@ -80,14 +80,14 @@ const Books = () => {
             setDeepSearchAttempted(true);
         }
 
-        if(search){
+        if (search) {
             try {
                 console.log('Starting deep search for:', search);
                 const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
                 const data = await res.json();
-                
+
                 console.log('Deep search response:', data);
-                
+
                 if (data.error) {
                     console.error('Search error:', data.error);
                     setSearchResultsBooks([]);
@@ -109,7 +109,7 @@ const Books = () => {
             setExtensiveSearchAttempted(true);
         }
 
-        if(search){
+        if (search) {
             try {
                 console.log('Starting extensive search for:', search);
                 // Add more search terms to make the search more extensive
@@ -119,7 +119,7 @@ const Books = () => {
                     search + ' book', // Add "book" to the search
                     search.split(' ').slice(0, 2).join(' ') // Try with just first two words
                 ];
-                
+
                 const allResults = [];
                 for (const term of searchTerms) {
                     const res = await fetch(`/api/search-books?query=${encodeURIComponent(term)}`);
@@ -128,12 +128,12 @@ const Books = () => {
                         allResults.push(...(data.books || data.data || []));
                     }
                 }
-                
+
                 // Remove duplicates based on ISBN
                 const uniqueResults = allResults.filter((book, index, self) =>
                     index === self.findIndex((b) => b.isbn === book.isbn)
                 );
-                
+
                 console.log('Extensive search response:', uniqueResults);
                 setSearchResultsBooks(uniqueResults);
             } catch (error) {
@@ -268,4 +268,11 @@ const Books = () => {
     )
 }
 
-export default Books
+export default function BooksPage (){
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <Books/>
+        </Suspense>
+    );
+}
+
