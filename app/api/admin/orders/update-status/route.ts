@@ -39,20 +39,42 @@ export async function POST(request: Request) {
             updateQuery = `UPDATE orders SET delivery_status = $1, delivered_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`;
             params = [status, orderId];
         } else if (status === 'Cancelled') {
-            updateQuery = `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', updated_at = NOW() WHERE id = $2 RETURNING *`;
-            params = [status, orderId];
+            try {
+                await client.query('BEGIN');
+                // Update order
+                const orderResult = await client.query(
+                    `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', updated_at = NOW() WHERE id = $2 RETURNING *`,
+                    [status, orderId]
+                );
+                // Update payment(s) for this order
+                await client.query(
+                    `UPDATE payments SET status = 'refunded', updated_at = NOW() WHERE order_id = $1`,
+                    [orderId]
+                );
+                await client.query('COMMIT');
+                if (orderResult.rows.length === 0) {
+                    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+                }
+                const updatedOrder: OrderRecord = orderResult.rows[0];
+                return NextResponse.json(updatedOrder);
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error("Error updating order and payment status:", err);
+                return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+            }
         } else {
             updateQuery = `UPDATE orders SET delivery_status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`;
             params = [status, orderId];
         }
 
-        const result = await client.query(updateQuery, params);
-        if (result.rows.length === 0) {
-            return NextResponse.json({ error: "Order not found" }, { status: 404 });
+        if (updateQuery) {
+            const result = await client.query(updateQuery, params);
+            if (result.rows.length === 0) {
+                return NextResponse.json({ error: "Order not found" }, { status: 404 });
+            }
+            const updatedOrder: OrderRecord = result.rows[0];
+            return NextResponse.json(updatedOrder);
         }
-
-        const updatedOrder: OrderRecord = result.rows[0];
-        return NextResponse.json(updatedOrder);
     } catch (error) {
         console.error("Error updating order status:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

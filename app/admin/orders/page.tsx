@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreHorizontal, ChevronLeft, ChevronRight, BadgeCheck, XCircle, Clock, Truck, Package, PackageCheck, Loader2 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,7 +31,8 @@ interface Order {
     id: string;
     user_id: string;
     total_amount: number;
-    status: string;
+    payment_status: string;
+    delivery_status: string;
     created_at: string;
     user_name: string;
     user_email: string;
@@ -64,7 +65,7 @@ export default function OrdersPage() {
         if (!userId || !isLoaded) return;
 
         try {
-            const response = await fetch('/api/admin/orders');
+            const response = await fetch('/api/admin/orders/get-orders');
             if (!response.ok) {
                 throw new Error('Failed to fetch orders');
             }
@@ -108,6 +109,7 @@ export default function OrdersPage() {
     };
 
     const getStatusColor = (status: string) => {
+        if (!status) return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
         switch (status.toLowerCase()) {
             case "order placed":
                 return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
@@ -212,6 +214,64 @@ export default function OrdersPage() {
         }
     }
 
+    // Helper for badge design
+    function renderStatusBadge(status: string) {
+        let color = '';
+        let icon = null;
+        let label = status;
+        switch (status.toLowerCase()) {
+            case 'completed':
+                color = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700';
+                icon = <BadgeCheck className="w-4 h-4 mr-1" />;
+                label = 'Completed';
+                break;
+            case 'refunded':
+                color = 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-700';
+                icon = <XCircle className="w-4 h-4 mr-1" />;
+                label = 'Refunded';
+                break;
+            case 'pending':
+                color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700';
+                icon = <Clock className="w-4 h-4 mr-1" />;
+                label = 'Pending';
+                break;
+            case 'processing':
+                color = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700';
+                icon = <Loader2 className="w-4 h-4 mr-1 animate-spin" />;
+                label = 'Processing';
+                break;
+            case 'shipped':
+                color = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-700';
+                icon = <Truck className="w-4 h-4 mr-1" />;
+                label = 'Shipped';
+                break;
+            case 'out for delivery':
+                color = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700';
+                icon = <Package className="w-4 h-4 mr-1" />;
+                label = 'Out for Delivery';
+                break;
+            case 'delivered':
+                color = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700';
+                icon = <PackageCheck className="w-4 h-4 mr-1" />;
+                label = 'Delivered';
+                break;
+            case 'cancelled':
+                color = 'bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-300 dark:border-gray-700';
+                icon = <XCircle className="w-4 h-4 mr-1" />;
+                label = 'Cancelled';
+                break;
+            default:
+                color = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-300 dark:border-gray-700';
+                icon = <Clock className="w-4 h-4 mr-1" />;
+                label = status;
+        }
+        return (
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color} gap-1`}>
+                {icon}{label}
+            </span>
+        );
+    }
+
     if (isLoading) {
         return (
             <div className="w-full p-3">
@@ -303,24 +363,16 @@ export default function OrdersPage() {
                                     {formatCurrency(Number(order.total_amount))}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <span
-                                        className={`${getStatusColor(order.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
-                                    >
-                                        {order.status}
-                                    </span>
+                                    {renderStatusBadge(order.payment_status)}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <span
-                                        className={`${getStatusColor(order.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
-                                    >
-                                        {order.status}
-                                    </span>
+                                    {renderStatusBadge(order.delivery_status)}
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground text-center">
                                     {formatDate(order.created_at)}
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground text-center">
-                                    {order.status === 'Delivered' ? formatDate(order.created_at) : 'N/A'}
+                                    {order.delivery_status === 'Delivered' ? formatDate(order.created_at) : 'N/A'}
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <DropdownMenu>
@@ -337,7 +389,7 @@ export default function OrdersPage() {
                                             }}>
                                                 Update Status
                                             </DropdownMenuItem>
-                                            {order.status !== 'Delivered' && (
+                                            {order.delivery_status !== 'Delivered' && (
                                                 <>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem 
@@ -408,7 +460,7 @@ export default function OrdersPage() {
                     </AlertDialogHeader>
                     <div className="grid grid-cols-2 gap-2 py-4">
                         {ORDER_STATUSES.map((status) => {
-                            const isPast = selectedOrder ? isPastStatus(selectedOrder.status, status) : false;
+                            const isPast = selectedOrder ? isPastStatus(selectedOrder.delivery_status, status) : false;
                             return (
                                 <Button
                                     key={status}

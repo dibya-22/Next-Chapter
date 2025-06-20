@@ -40,6 +40,7 @@ export async function GET(req: Request) {
             LIMIT $1 OFFSET $2;`,
             [limit, offset]
         );
+        console.log(ordersResult);
 
         return NextResponse.json({ orders: ordersResult.rows, total }, { status: 200 });
     } catch (error) {
