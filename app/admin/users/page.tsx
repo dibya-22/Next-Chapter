@@ -95,8 +95,8 @@ const Users = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    targetUserId: selectedUser.id,
-                    newStatus
+                    userId: selectedUser.id,
+                    isDisabled: newStatus === "blocked"
                 })
             })
 
