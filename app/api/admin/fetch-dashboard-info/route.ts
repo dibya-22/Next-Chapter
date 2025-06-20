@@ -18,7 +18,6 @@ export async function GET() {
     }
 
     try {
-        // Count total users and active users
         let totalUsers = 0;
         let activeUsers = 0;
         let blockedUsers = 0;
@@ -30,16 +29,6 @@ export async function GET() {
             if (!users.data.length) break;
 
             totalUsers += users.data.length;
-
-            // Add detailed logging for each user
-            users.data.forEach(user => {
-                console.log("User metadata check:", {
-                    userId: user.id,
-                    disabled: user.privateMetadata?.disabled,
-                    blocked: user.privateMetadata?.blocked,
-                    isActive: !user.privateMetadata?.disabled && !user.privateMetadata?.blocked
-                });
-            });
 
             // Count users that are not disabled and not blocked
             activeUsers += users.data.filter(user => !user.privateMetadata?.disabled && !user.privateMetadata?.blocked).length;
@@ -55,11 +44,13 @@ export async function GET() {
         const payments = await client.query(
             "SELECT COALESCE(SUM(amount), 0) as total_revenue, COALESCE(COUNT(*), 0) as total_payments FROM payments WHERE status = 'completed'"
         );
+
         const monthlyPayments = await client.query(
             "SELECT COALESCE(SUM(amount), 0) as monthly_revenue FROM payments WHERE status = 'completed' AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW())"
         );
 
-        const refundedPayments = await client.query(`Select COALESCE(SUM(amount), 0) as refunded_payments FROM payments WHERE status = 'refunded'`);
+        const refundedPayments = await client.query(`Select COALESCE(COUNT(id)) as refunded_payments FROM payments WHERE status = 'refunded'`);
+        const refundedAmount = await client.query(`Select COALESCE(SUM(amount), 0) as refunded_amount FROM payments WHERE status = 'refunded'`);
 
         console.log("Payments Data:", payments.rows[0]);
 
@@ -104,6 +95,7 @@ export async function GET() {
             totalPayments: Number(payments.rows[0]?.total_payments || 0),
             monthlyRevenue: Number(monthlyPayments.rows[0]?.monthly_revenue || 0),
             refundedPayments: Number(refundedPayments.rows[0]?.refunded_payments || 0),
+            refundedAmount: Number(refundedAmount.rows[0]?.refunded_amount || 0),
             totalOrders: Number(orders.rows[0]?.total_orders || 0),
             deliveredOrders: Number(orders.rows[0]?.delivered_orders || 0),
             pendingOrders: Number(orders.rows[0]?.pending_orders || 0),

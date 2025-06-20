@@ -4,7 +4,8 @@ import {
     Users, UserCheck, UserX,
     CreditCard, IndianRupee, CalendarDays,
     Activity, Truck, Clock, Receipt,
-    Book, BookCheck, BookCopy, CircleAlert, FolderOpen
+    Book, BookCheck, BookCopy, CircleAlert, FolderOpen,
+    Undo, RotateCcw
 } from 'lucide-react';
 import { useAuth } from "@clerk/nextjs";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
@@ -14,13 +15,6 @@ import { getMonth } from '@/lib/utils';
 import { toast } from "react-toastify";
 
 
-interface RecentOrder {
-    id: string | number;
-    customer_name: string;
-    amount: number;
-    status: string;
-}
-
 interface DashboardData {
     totalUsers: number;
     activeUsers: number;
@@ -29,6 +23,7 @@ interface DashboardData {
     totalPayments: number;
     monthlyRevenue: number;
     refundedPayments: number;
+    refundedAmount: number;
     totalOrders: number;
     deliveredOrders: number;
     pendingOrders: number;
@@ -38,7 +33,6 @@ interface DashboardData {
     totalStock: number;
     outOfStock: number;
     totalCategories: number;
-    recentOrders: RecentOrder[];
 }
 
 function MetricCardSkeleton() {
@@ -89,6 +83,7 @@ export default function DashboardPage() {
         totalPayments: 0,
         monthlyRevenue: 0,
         refundedPayments: 0,
+        refundedAmount: 0,
         totalOrders: 0,
         deliveredOrders: 0,
         pendingOrders: 0,
@@ -98,7 +93,6 @@ export default function DashboardPage() {
         totalStock: 0,
         outOfStock: 0,
         totalCategories: 0,
-        recentOrders: []
     });
 
     // User Data
@@ -158,8 +152,16 @@ export default function DashboardPage() {
         {
             title: "Refunded Payments",
             value: `${(dashboardData?.refundedPayments || 0).toLocaleString()}`,
-            icon: CalendarDays,
-            description: "Refunded payments",
+            icon: Undo,
+            description: "No. of Refunded payments",
+            cardClass: "bg-orange-200 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800",
+            iconClass: "text-orange-600 dark:text-orange-400",
+        },
+        {
+            title: "Refunded Amount",
+            value: `₹${(dashboardData?.refundedAmount || 0).toLocaleString()}`,
+            icon: RotateCcw,
+            description: "Total amount that refunded",
             cardClass: "bg-red-200 dark:bg-red-900/20 border-red-200 dark:border-red-800",
             iconClass: "text-red-600 dark:text-red-400",
         }
@@ -404,42 +406,6 @@ export default function DashboardPage() {
                 metrics={booksMetrics}
                 gridCols="md:grid-cols-2 lg:grid-cols-4"
             />
-
-            <Separator className="my-4 bg-gray-200 dark:bg-gray-700" />
-
-            <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <table className="min-w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Order ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-                            {dashboardData.recentOrders.map((order) => (
-                                <tr key={order.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{order.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{order.customer_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">₹{order.amount}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        <span className={`px-2 py-1 rounded-full text-xs ${
-                                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {order.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     );
 }
