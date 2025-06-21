@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import useSound from 'use-sound';
 import { EB_Garamond } from 'next/font/google';
@@ -95,6 +95,11 @@ const Navbar = () => {
         input?.blur();
         setIsSearchFocused(false);
 
+        // Hide search bar only on mobile after search
+        if (isMobile()) {
+            setIsSearchOpen(false);
+        }
+
         redirect(`/books?search=${encodeURIComponent(searchQuery)}`);
     }
 
@@ -105,6 +110,35 @@ const Navbar = () => {
     const handleSearchBlur = () => {
         setIsSearchFocused(false);
     }
+
+    const closeMenu = useCallback(() => {
+        setIsMenuOpen(false);
+        menuclose();
+    }, [menuclose]);
+
+    const isMobile = () => window.innerWidth < 768;
+
+    const handleMenuClick = (action: () => void) => {
+        action();
+        if (isMobile()) {
+            closeMenu();
+        }
+    };
+
+    // Close menu when clicking outside (mobile only)
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            if (isMenuOpen && isMobile() && !target.closest('.menu-container')) {
+                closeMenu();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen, closeMenu]);
 
     const currentTheme = theme === "system" ? systemTheme : theme;
     if (!mounted) {
@@ -128,7 +162,8 @@ const Navbar = () => {
                 </Link>
             </div>
 
-            <div className={`search-bar ${isSearchOpen ? "visible opacity-100 translate-x-0" : "invisible opacity-0 translate-x-60"} ${isSearchFocused ? "scale-105" : "scale-100"} transform  transition-all duration-500 ease-in-out`}>
+            {/* Search Bar - Responsive positioning */}
+            <div className={`search-bar absolute left-1/2 transform -translate-x-1/2 top-full mt-2 sm:relative sm:left-auto sm:transform-none sm:top-auto sm:mt-0 ${isSearchOpen ? "visible opacity-100 translate-y-0" : "invisible opacity-0 translate-y-[-20px] sm:translate-x-0"} ${isSearchFocused ? "scale-105" : "scale-100"} transform transition-all duration-500 ease-in-out z-40`}>
                 <form onSubmit={handleSearchSubmit} className='relative flex items-center'>
                     <input
                         type="text"
@@ -140,7 +175,7 @@ const Navbar = () => {
                         autoComplete='off'
                         onFocus={handleSearchFocus}
                         onBlur={handleSearchBlur}
-                        className='w-[30vw] h-10 px-6 py-3 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800'
+                        className='w-[90vw] md:w-[30vw] h-10 px-6 py-3 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800'
                     />
                     <button
                         type='button'
@@ -173,54 +208,12 @@ const Navbar = () => {
 
             <div className="icons flex items-center gap-4">
                 <div className='flex items-center gap-4'>
-                    <div className="menu flex items-center gap-4 transition-all duration-500 ease-in-out">
-                        <div className={`${isMenuOpen ? "flex visible opacity-100" : "hidden invisible opacity-0"} items-center gap-4 border px-4 py-2 rounded-full bg-gray-100 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out`}>
-                            <Link href="/" className='w-8 h-8 flex items-center justify-center hover:animate-wiggle'>
-                                <Image
-                                    src="/icons/home.png"
-                                    width={20}
-                                    height={20}
-                                    alt="home icon"
-                                    className='dark:invert'
-                                />
-                            </Link>
-                            <button onClick={handleSearch} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
-                                <Image
-                                    src="/icons/search.png"
-                                    width={30}
-                                    height={30}
-                                    alt="search icon"
-                                    className='dark:invert'
-                                />
-                            </button>
-                            <Link href="/cart" className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
-                                <Image
-                                    src="/icons/cart.png"
-                                    width={23}
-                                    height={23}
-                                    alt="cart icon"
-                                    className='dark:invert'
-                                />
-                                {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                        {cartCount}
-                                    </span>
-                                )}
-                            </Link>
-                            <Link href="/orders" className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
-                                <Image
-                                    src="/icons/orders.png"
-                                    width={23}
-                                    height={23}
-                                    alt="orders icon"
-                                    className='dark:invert'
-                                />
-                            </Link>
-                        </div>
+                    {/* Desktop menu with dropdown */}
+                    <div className="relative hidden md:block menu-container">
                         <button
                             onClick={toggleMenu}
-                            className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch">
-                                
+                            className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch"
+                        >
                             <Image
                                 src={isMenuOpen ? "/icons/close.png" : "/icons/menu.png"}
                                 width={isMenuOpen ? 20 : 25}
@@ -229,7 +222,77 @@ const Navbar = () => {
                                 className='dark:invert'
                             />
                         </button>
+                        {/* Desktop menu dropdown */}
+                        <div className={`
+                            ${isMenuOpen ? "flex visible opacity-100" : "hidden invisible opacity-0"}
+                            flex-row items-center gap-4 border px-4 py-2 rounded-full bg-gray-100 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800
+                            shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+                            absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-2 z-50 transition-all duration-500 ease-in-out
+                            w-fit
+                        `}>
+                            <Link href="/" onClick={() => handleMenuClick(() => {})} className='w-8 h-8 flex items-center justify-center hover:animate-wiggle'>
+                                <Image src="/icons/home.png" width={20} height={20} alt="home icon" className='dark:invert' />
+                            </Link>
+                            <button onClick={() => handleMenuClick(() => handleSearch())} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
+                                <Image src="/icons/search.png" width={30} height={30} alt="search icon" className='dark:invert' />
+                            </button>
+                            <Link href="/cart" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
+                                <Image src="/icons/cart.png" width={23} height={23} alt="cart icon" className='dark:invert' />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
+                            <Link href="/orders" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
+                                <Image src="/icons/orders.png" width={23} height={23} alt="orders icon" className='dark:invert' />
+                            </Link>
+                        </div>
                     </div>
+
+                    {/* Mobile menu button with dropdown */}
+                    <div className="relative md:hidden menu-container mobile-menu-container">
+                        <button
+                            onClick={toggleMenu}
+                            className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch"
+                        >
+                            <Image
+                                src={isMenuOpen ? "/icons/close.png" : "/icons/menu.png"}
+                                width={isMenuOpen ? 20 : 25}
+                                height={isMenuOpen ? 20 : 25}
+                                alt="menu icon"
+                                className='dark:invert'
+                            />
+                        </button>
+                        {/* Mobile menu dropdown */}
+                        <div className={`
+                            ${isMenuOpen ? "flex visible opacity-100" : "hidden invisible opacity-0"}
+                            flex-col items-center gap-3 border px-3 py-2 rounded-full bg-gray-100 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800
+                            shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+                            absolute left-1/2 -translate-x-1/2 top-12 z-50 transition-all duration-500 ease-in-out
+                            w-fit
+                        `}>
+                            <Link href="/" onClick={() => handleMenuClick(() => {})} className='w-8 h-8 flex items-center justify-center hover:animate-wiggle'>
+                                <Image src="/icons/home.png" width={20} height={20} alt="home icon" className='dark:invert' />
+                            </Link>
+                            <button onClick={() => handleMenuClick(() => handleSearch())} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
+                                <Image src="/icons/search.png" width={30} height={30} alt="search icon" className='dark:invert' />
+                            </button>
+                            <Link href="/cart" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
+                                <Image src="/icons/cart.png" width={23} height={23} alt="cart icon" className='dark:invert' />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
+                            <Link href="/orders" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
+                                <Image src="/icons/orders.png" width={23} height={23} alt="orders icon" className='dark:invert' />
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Theme toggle stays in place */}
                     <button
                         onClick={toggletheme}
                         className="w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch">
