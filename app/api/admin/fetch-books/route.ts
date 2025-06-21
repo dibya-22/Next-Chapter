@@ -20,44 +20,69 @@ interface VolumeInfo {
 
 const GOOGLE_BOOK_API = process.env.GOOGLE_BOOK_API_KEY;
 const POPULAR_BOOK_QUERIES = [
-
-    "Sapiens: A Brief History of Humankind",
-    "Educated",
-    "Becoming",
-    "The Midnight Library",
-    "Atomic Habits Workbook",
-    "Can't Hurt Me Journal",
-    "The Lean Startup",
-    "Start with Why Workbook",
-    "The 5 Love Languages",
-    "Factfulness",
-    "Principles",
-    "Range: Why Generalists Triumph in a Specialized World",
-    "The Innovators",
-    "Bad Blood",
-    "The Body Keeps the Score",
-    "Dare to Lead Workbook",
-    "Born a Crime",
-    "The Art of Thinking Clearly Workbook",
-    "Thinking in Bets",
-    "The Code Breaker",
-    "The Ride of a Lifetime",
-    "Deep Work Workbook",
-    "The Happiness Hypothesis",
-    "Drive Workbook",
-    "The Power of Moments",
-    "Extreme Ownership",
-    "The Checklist Manifesto",
-    "How to Fail at Almost Everything and Still Win Big",
-    "Radical Candor",
-    "Tools of Titans Workbook",
-    "Meditations on First Philosophy",
-    "The Road Less Traveled",
-    "The Artist's Way",
-    "The Undoing Project",
-    "The Signal and the Noise",
-    "Outlive: The Science and Art of Longevity",
-    "Thinking, Fast and Slow Workbook"
+    "Atomic Habits - James Clear",
+    "Ikigai - Héctor García & Francesc Miralles",
+    "The Psychology of Money - Morgan Housel",
+    "The Power of Habit - Charles Duhigg",
+    "Tiny Habits - BJ Fogg",
+    "Mindset - Carol Dweck",
+    "Grit - Angela Duckworth",
+    "Deep Work - Cal Newport",
+    "So Good They Cant Ignore You - Cal Newport",
+    "Essentialism - Greg McKeown",
+    "The One Thing - Gary Keller & Jay Papasan",
+    "Make Your Bed - Admiral William H. McRaven",
+    "The Subtle Art of Not Giving a F*ck - Mark Manson",
+    "Everything is F*cked - Mark Manson",
+    "Think Like a Monk - Jay Shetty",
+    "Can't Hurt Me - David Goggins",
+    "The 5 AM Club - Robin Sharma",
+    "The Monk Who Sold His Ferrari - Robin Sharma",
+    "Who Will Cry When You Die - Robin Sharma",
+    "The Miracle Morning - Hal Elrod",
+    "Start With Why - Simon Sinek",
+    "Leaders Eat Last - Simon Sinek",
+    "Drive - Daniel H. Pink",
+    "The Slight Edge - Jeff Olson",
+    "Rich Dad Poor Dad - Robert Kiyosaki",
+    "The Almanack of Naval Ravikant - Eric Jorgenson",
+    "Show Your Work - Austin Kleon",
+    "Steal Like an Artist - Austin Kleon",
+    "The Courage to Be Disliked - Ichiro Kishimi & Fumitake Koga",
+    "Ego Is the Enemy - Ryan Holiday",
+    "The Obstacle Is the Way - Ryan Holiday",
+    "Stillness Is the Key - Ryan Holiday",
+    "Tools of Titans - Tim Ferriss",
+    "Tribe of Mentors - Tim Ferriss",
+    "The 4-Hour Workweek - Tim Ferriss",
+    "Outliers - Malcolm Gladwell",
+    "Blink - Malcolm Gladwell",
+    "The Tipping Point - Malcolm Gladwell",
+    "How to Win Friends and Influence People - Dale Carnegie",
+    "Think and Grow Rich - Napoleon Hill",
+    "As a Man Thinketh - James Allen",
+    "Mans Search for Meaning - Viktor E. Frankl",
+    "The Art of Happiness - Dalai Lama",
+    "Awaken the Giant Within - Tony Robbins",
+    "Unlimited Power - Tony Robbins",
+    "12 Rules for Life - Jordan B. Peterson",
+    "Beyond Order - Jordan B. Peterson",
+    "The Magic of Thinking Big - David J. Schwartz",
+    "The Mountain Is You - Brianna Wiest",
+    "101 Essays That Will Change The Way You Think - Brianna Wiest",
+    "The Daily Stoic - Ryan Holiday",
+    "Meditations - Marcus Aurelius",
+    "Letters from a Stoic - Seneca",
+    "The War of Art - Steven Pressfield",
+    "Do the Work - Steven Pressfield",
+    "Rework - Jason Fried & David Heinemeier Hansson",
+    "Company of One - Paul Jarvis",
+    "Linchpin - Seth Godin",
+    "Purple Cow - Seth Godin",
+    "The Dip - Seth Godin",
+    "Quiet - Susan Cain",
+    "Digital Minimalism - Cal Newport",
+    "The Shallows - Nicholas Carr"
 ];
 
 
@@ -121,7 +146,7 @@ export async function POST() {
         for (const bookQuery of POPULAR_BOOK_QUERIES) {
             // Start a new transaction for each book query
             await client.query('BEGIN');
-            
+
             try {
                 console.log(`Processing query: ${bookQuery}`);
                 const items = await fetchBooksFromGoogleAPI(bookQuery);
@@ -159,7 +184,7 @@ export async function POST() {
                         ?.replace('http://', 'https://') || null;
                     const category = volume.categories?.[0]?.toLowerCase() || 'uncategorized';
                     const pages = volume.pageCount || 0;
-                    const totalPages = pages > 0 ? pages : 0; // Ensure totalPages is a number
+                    const totalPages = Math.floor(pages > 0 ? pages : 0); // Ensure totalPages is an integer
                     const totalSold = 0;
                     const isbn = volume.industryIdentifiers
                         ? volume.industryIdentifiers.find((id: IndustryIdentifier) => id.type === 'ISBN_13')?.identifier ||
@@ -168,13 +193,29 @@ export async function POST() {
                         : null;
 
                     const price = Math.floor(Math.random() * 1000) + 150;
-                    const discount = 0.1;
+                    const discount = 15;
                     const stock = Math.floor(Math.random() * 200) + 50;
                     const rating = 0; // Default rating
                     const ratingCount = 0; // Default rating count
 
                     // Insert new book with error handling
                     try {
+                        const insertValues = [
+                            title, authors, description, thumbnail,
+                            isbn, price, stock, category, totalSold,
+                            discount, rating, ratingCount, totalPages
+                        ];
+
+                        console.log('Inserting book with values:', {
+                            title,
+                            price,
+                            stock,
+                            discount,
+                            rating,
+                            ratingCount,
+                            totalPages
+                        });
+
                         await client.query(
                             `INSERT INTO books (
                                 title, authors, description, thumbnail, 
@@ -182,11 +223,7 @@ export async function POST() {
                                 discount, rating, rating_count, pages
                             )
                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                            [
-                                title, authors, description, thumbnail, 
-                                isbn, price, stock, category, totalSold, 
-                                discount, rating, ratingCount, totalPages
-                            ]
+                            insertValues
                         );
                         console.log(`Added new book: ${title}`);
                         totalAdded++;
