@@ -63,13 +63,13 @@ export function CartCard({ item, onQuantityChange, onRemove }: CartCardProps) {
             <div className="block sm:hidden">
                 <div className="flex gap-3 mb-3">
                     {/* Book Image */}
-                    <div className="relative w-14 h-18 flex-shrink-0 rounded-lg overflow-hidden shadow-md">
+                    <div className="relative w-12 h-16 sm:w-14 sm:h-18 flex-shrink-0 rounded-lg overflow-hidden shadow-md">
                         <Image
                             src={item.thumbnail || "/placeholder.svg?height=120&width=80"}
                             alt={item.title}
                             fill
                             className="object-cover"
-                            sizes="56px"
+                            sizes="48px"
                         />
                         {/* Discount Badge */}
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 py-0.5 rounded-full shadow-sm">
