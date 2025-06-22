@@ -160,7 +160,7 @@ const Books = () => {
     }, [search, getSearchResults])
 
     return (
-        <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto my-10 px-4 sm:px-6 lg:px-8 mt-[11vh] space-y-8 sm:space-y-12">
+        <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto my-6 sm:my-10 px-3 sm:px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-28 space-y-6 sm:space-y-8 lg:space-y-12">
             {/* Search Results */}
             {search && (
                 <section className="search-results">
@@ -169,22 +169,22 @@ const Books = () => {
                             <SectionHeader title={`Search Results for "${search}"`} />
                             <BooksGrid books={searchResultsBooks} />
                             {searchResultsBooks.length < 5 && !deepSearching && !deepSearchAttempted && (
-                                <div onClick={handleDeepSearch} className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600">
+                                <div onClick={handleDeepSearch} className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 cursor-pointer hover:text-blue-600 text-sm sm:text-base">
                                     Found only {searchResultsBooks.length} results. Try Deep Search...
                                 </div>
                             )}
                             {searchResultsBooks.length < 5 && deepSearching && (
-                                <div className="w-fit ml-10 mt-6 text-blue-500">
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 text-sm sm:text-base">
                                     <LoadingDots />
                                 </div>
                             )}
                             {searchResultsBooks.length < 5 && deepSearchAttempted && !deepSearching && !extensiveSearchAttempted && (
-                                <div className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600" onClick={handleExtensiveSearch}>
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 cursor-pointer hover:text-blue-600 text-sm sm:text-base" onClick={handleExtensiveSearch}>
                                     Not Satisfied? Try Again...
                                 </div>
                             )}
                             {searchResultsBooks.length < 5 && extensiveSearchAttempted && !deepSearching && (
-                                <div className="w-fit ml-10 mt-6 text-gray-500">
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-gray-500 text-sm sm:text-base">
                                     No more books found in our database or Google Books API.
                                 </div>
                             )}
@@ -194,22 +194,22 @@ const Books = () => {
                             <SectionHeader title={`No Results Found for "${search}"`} />
                             <BooksGrid books={searchResultsBooks} />
                             {!deepSearching && !deepSearchAttempted && (
-                                <div onClick={handleDeepSearch} className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600">
+                                <div onClick={handleDeepSearch} className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 cursor-pointer hover:text-blue-600 text-sm sm:text-base">
                                     Try Deep Search...
                                 </div>
                             )}
                             {deepSearching && (
-                                <div className="w-fit ml-10 mt-6 text-blue-500">
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 text-sm sm:text-base">
                                     <LoadingDots />
                                 </div>
                             )}
                             {deepSearchAttempted && !deepSearching && searchResultsBooks.length === 0 && !extensiveSearchAttempted && (
-                                <div className="w-fit ml-10 mt-6 text-blue-500 cursor-pointer hover:text-blue-600" onClick={handleExtensiveSearch}>
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-blue-500 cursor-pointer hover:text-blue-600 text-sm sm:text-base" onClick={handleExtensiveSearch}>
                                     Not Satisfied? Try Again...
                                 </div>
                             )}
                             {extensiveSearchAttempted && !deepSearching && searchResultsBooks.length === 0 && (
-                                <div className="w-fit ml-10 mt-6 text-gray-500">
+                                <div className="w-fit ml-4 sm:ml-10 mt-4 sm:mt-6 text-gray-500 text-sm sm:text-base">
                                     No books found in our database or Google Books API.
                                 </div>
                             )}
@@ -231,30 +231,30 @@ const Books = () => {
             </section>
 
             {/* Categories */}
-            <section className="categories space-y-8 sm:space-y-10">
+            <section className="categories space-y-6 sm:space-y-8 lg:space-y-10">
                 <SectionHeader title="Categories" />
 
                 {/* Category - Fiction */}
-                <div className="fiction ml-10">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Fiction</h2>
+                <div className="fiction ml-2 sm:ml-10">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-800 dark:text-gray-200">Fiction</h2>
                     <BooksGrid books={categoriesBooks.fiction} />
                 </div>
 
                 {/* Category - Non-Fiction */}
-                <div className="non-fiction ml-10">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Non-Fiction</h2>
+                <div className="non-fiction ml-2 sm:ml-10">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-800 dark:text-gray-200">Non-Fiction</h2>
                     <BooksGrid books={categoriesBooks.nonFiction} />
                 </div>
 
                 {/* Category - Self-Help */}
-                <div className="self-help ml-10">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Self-Help</h2>
+                <div className="self-help ml-2 sm:ml-10">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-800 dark:text-gray-200">Self-Help</h2>
                     <BooksGrid books={categoriesBooks.selfHelp} />
                 </div>
 
                 {/* Category - Business */}
-                <div className="business ml-10">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800 dark:text-gray-200">Business</h2>
+                <div className="business ml-2 sm:ml-10">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-800 dark:text-gray-200">Business</h2>
                     <BooksGrid books={categoriesBooks.business} />
                 </div>
             </section>
