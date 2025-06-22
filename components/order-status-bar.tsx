@@ -13,10 +13,10 @@ const OrderStatusBar = ({ currentStatus = "Order Placed" }: OrderStatusBarProps)
     const currentIndex = statuses.indexOf(safeStatus)
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-6">
+        <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 lg:p-6">
             <div className="relative">
                 {/* Progress Line */}
-                <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-200">
+                <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 h-0.5 bg-gray-200">
                     <div
                         className="h-full bg-green-500 transition-all duration-500 ease-in-out"
                         style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }}
@@ -34,22 +34,22 @@ const OrderStatusBar = ({ currentStatus = "Order Placed" }: OrderStatusBarProps)
                                 {/* Dot */}
                                 <div
                                     className={cn(
-                                        "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300",
+                                        "w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300",
                                         isCompleted ? "bg-green-500 border-green-500 text-white" : "bg-white border-gray-300 text-gray-400",
                                     )}
                                 >
                                     {isCompleted ? (
-                                        <Check className="w-4 h-4" />
+                                        <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                                     ) : (
-                                        <span className="text-sm font-medium">{index + 1}</span>
+                                        <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
                                     )}
                                 </div>
 
                                 {/* Status Label */}
-                                <div className="mt-3 text-center">
+                                <div className="mt-2 sm:mt-3 text-center">
                                     <p
                                         className={cn(
-                                            "text-sm font-medium transition-colors duration-300",
+                                            "text-xs sm:text-sm font-medium transition-colors duration-300 line-clamp-2",
                                             isCompleted ? "text-green-600" : isCurrent ? "text-gray-900" : "text-gray-400",
                                         )}
                                     >
