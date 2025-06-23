@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import CheckoutForm from '@/components/cart/checkout-form'
 import { toast } from 'react-toastify';
+import { CartSkeleton } from '@/components/cart/cart-skeleton';
 
 declare global {
     interface Window {
@@ -39,10 +40,12 @@ const Cart = () => {
     };
 
     useEffect(() => {
-        if (isSignedIn) {
+        if (isLoaded && isSignedIn) {
             fetchCartItems();
+        } else if (isLoaded && !isSignedIn) {
+            setIsLoading(false);
         }
-    }, [isSignedIn]);
+    }, [isLoaded, isSignedIn]);
 
     const handleQuantityChange = async (id: string, newQuantity: number) => {
         try {
@@ -173,6 +176,10 @@ const Cart = () => {
         }
     };
 
+    if (!isLoaded || isLoading) {
+        return <CartSkeleton />;
+    }
+
     if (!isSignedIn) {
         return (
             <div className='font-[family-name:var(--font-poppins)] w-full max-w-2xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 flex flex-col items-center justify-center gap-4 min-h-[50vh]'>
@@ -181,21 +188,6 @@ const Cart = () => {
                 <SignInButton mode="modal">
                     <Button variant="custom">Sign In</Button>
                 </SignInButton>
-            </div>
-        );
-    }
-
-    if (!isLoaded || isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[50vh] pt-20 sm:pt-24">
-                <span className="inline-flex items-center">
-                    Loading
-                    <span className="ml-1 flex gap-1">
-                        <span className="animate-[bounce_1s_infinite_0ms]">.</span>
-                        <span className="animate-[bounce_1s_infinite_200ms]">.</span>
-                        <span className="animate-[bounce_1s_infinite_400ms]">.</span>
-                    </span>
-                </span>
             </div>
         );
     }

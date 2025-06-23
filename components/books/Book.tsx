@@ -1,24 +1,23 @@
 "use client"
-import { useState, useEffect, useCallback} from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { type Book, type Categories, BookType } from "@/lib/types"
 import { BooksGrid } from "@/components/books/books-grid"
 import { SectionHeader } from "@/components/section-header"
+import Loading from "@/components/books/book-loading"
 
-const LoadingDots = () => {
-    return (
-        <span className="inline-flex items-center">
-            Searching
-            <span className="ml-1 flex gap-1">
-                <span className="animate-[bounce_1s_infinite_0ms]">.</span>
-                <span className="animate-[bounce_1s_infinite_200ms]">.</span>
-                <span className="animate-[bounce_1s_infinite_400ms]">.</span>
-            </span>
+const LoadingDots = () => (
+    <span className="inline-flex items-center">
+        Searching
+        <span className="ml-1 flex gap-1">
+            <span className="animate-[bounce_1s_infinite_0ms]">.</span>
+            <span className="animate-[bounce_1s_infinite_200ms]">.</span>
+            <span className="animate-[bounce_1s_infinite_400ms]">.</span>
         </span>
-    )
-}
+    </span>
+)
 
-const Books = () => {
+export default function Books() {
     const searchParams = useSearchParams()
     const search = searchParams.get("search")
 
@@ -36,6 +35,7 @@ const Books = () => {
     const [deepSearching, setDeepSearching] = useState(false)
     const [deepSearchAttempted, setDeepSearchAttempted] = useState(false)
     const [extensiveSearchAttempted, setExtensiveSearchAttempted] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const getBooks = async () => {
         try {
@@ -61,11 +61,12 @@ const Books = () => {
                 selfHelp: (await selfHelp.json()).data || [],
                 business: (await business.json()).data || [],
             })
-        } catch (error) {
-            console.error("Error fetching books:", error)
+        } catch {
+            // do nothing
+        } finally {
+            setIsLoading(false)
         }
     }
-
 
     // Search
     const getSearchResults = useCallback(async () => {
@@ -76,71 +77,57 @@ const Books = () => {
 
     const handleDeepSearch = async () => {
         if (!deepSearching) {
-            setDeepSearching(true);
-            setDeepSearchAttempted(true);
+            setDeepSearching(true)
+            setDeepSearchAttempted(true)
         }
 
         if (search) {
             try {
-                console.log('Starting deep search for:', search);
-                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`);
-                const data = await res.json();
-
-                console.log('Deep search response:', data);
-
+                const res = await fetch(`/api/search-books?query=${encodeURIComponent(search)}`)
+                const data = await res.json()
                 if (data.error) {
-                    console.error('Search error:', data.error);
-                    setSearchResultsBooks([]);
+                    setSearchResultsBooks([])
                 } else {
-                    setSearchResultsBooks(data.books || data.data || []);
+                    setSearchResultsBooks(data.books || data.data || [])
                 }
-            } catch (error) {
-                console.error('Deep search error:', error);
-                setSearchResultsBooks([]);
+            } catch {
+                setSearchResultsBooks([])
             } finally {
-                setDeepSearching(false);
+                setDeepSearching(false)
             }
         }
     }
 
     const handleExtensiveSearch = async () => {
         if (!deepSearching) {
-            setDeepSearching(true);
-            setExtensiveSearchAttempted(true);
+            setDeepSearching(true)
+            setExtensiveSearchAttempted(true)
         }
 
         if (search) {
             try {
-                console.log('Starting extensive search for:', search);
-                // Add more search terms to make the search more extensive
                 const searchTerms = [
                     search,
-                    search.split(' ').join(' OR '), // Search for individual words
-                    search + ' book', // Add "book" to the search
-                    search.split(' ').slice(0, 2).join(' ') // Try with just first two words
-                ];
-
-                const allResults = [];
+                    search.split(' ').join(' OR '),
+                    search + ' book',
+                    search.split(' ').slice(0, 2).join(' ')
+                ]
+                const allResults = []
                 for (const term of searchTerms) {
-                    const res = await fetch(`/api/search-books?query=${encodeURIComponent(term)}`);
-                    const data = await res.json();
+                    const res = await fetch(`/api/search-books?query=${encodeURIComponent(term)}`)
+                    const data = await res.json()
                     if (data.books || data.data) {
-                        allResults.push(...(data.books || data.data || []));
+                        allResults.push(...(data.books || data.data || []))
                     }
                 }
-
-                // Remove duplicates based on ISBN
                 const uniqueResults = allResults.filter((book, index, self) =>
                     index === self.findIndex((b) => b.isbn === book.isbn)
-                );
-
-                console.log('Extensive search response:', uniqueResults);
-                setSearchResultsBooks(uniqueResults);
-            } catch (error) {
-                console.error('Extensive search error:', error);
-                setSearchResultsBooks([]);
+                )
+                setSearchResultsBooks(uniqueResults)
+            } catch {
+                setSearchResultsBooks([])
             } finally {
-                setDeepSearching(false);
+                setDeepSearching(false)
             }
         }
     }
@@ -152,12 +139,15 @@ const Books = () => {
     useEffect(() => {
         if (search) {
             getSearchResults()
-            // Reset deep search states when search changes
             setDeepSearching(false)
             setDeepSearchAttempted(false)
             setExtensiveSearchAttempted(false)
         }
     }, [search, getSearchResults])
+
+    if (isLoading) {
+        return <Loading />
+    }
 
     return (
         <div className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto my-6 sm:my-10 px-3 sm:px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-28 space-y-6 sm:space-y-8 lg:space-y-12">
@@ -267,5 +257,3 @@ const Books = () => {
         </div>
     )
 }
-
-export default Books;

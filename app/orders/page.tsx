@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ChevronDown, ChevronUp } from "lucide-react"
 import OrderStatusBar from "@/components/order-status-bar";
 import { formatDate } from "@/lib/utils";
+import { OrderSkeleton } from "@/components/order-skeleton";
 
 interface OrderItem {
     id: number;
@@ -29,7 +30,7 @@ interface Order {
 }
 
 const Order = () => {
-    const { isSignedIn } = useUser();
+    const { isLoaded, isSignedIn } = useUser();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -51,10 +52,12 @@ const Order = () => {
             }
         };
 
-        if (isSignedIn) {
+        if (isLoaded && isSignedIn) {
             fetchOrders();
+        } else if (isLoaded && !isSignedIn) {
+            setLoading(false);
         }
-    }, [isSignedIn]);
+    }, [isLoaded, isSignedIn]);
 
     const toggleOrderExpansion = (orderId: number) => {
         setExpandedOrders((prev) => ({
@@ -62,6 +65,10 @@ const Order = () => {
             [orderId]: !prev[orderId],
         }));
     };
+
+    if (!isLoaded || loading) {
+        return <OrderSkeleton />;
+    }
 
     if (!isSignedIn) {
         return (
@@ -71,15 +78,6 @@ const Order = () => {
                 <SignInButton mode="modal">
                     <Button variant="custom">Sign In</Button>
                 </SignInButton>
-            </div>
-        );
-    }
-
-    if (loading) {
-        return (
-            <div className='font-[family-name:var(--font-poppins)] w-full max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28'>
-                <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6'>Your Orders</h1>
-                <p className="text-sm sm:text-base">Loading orders...</p>
             </div>
         );
     }
