@@ -39,6 +39,8 @@ const Navbar = () => {
     const [switchon] = useSound('/sounds/switch_on.mp3', { volume: 0.5 });
     const [switchoff] = useSound('/sounds/switch_off.mp3', { volume: 0.5 });
     const [pop] = useSound('/sounds/pop.wav', { volume: 0.5 });
+
+    // Menu sounds
     const [menuopen] = useSound('/sounds/open-menu.wav', { volume: 0.5 });
     const [menuclose] = useSound('/sounds/close-menu.wav', { volume: 0.2 });
 
@@ -113,8 +115,8 @@ const Navbar = () => {
 
     const closeMenu = useCallback(() => {
         setIsMenuOpen(false);
-        menuclose();
-    }, [menuclose]);
+        // menuclose();
+    }, []);
 
     const isMobile = () => window.innerWidth < 768;
 
