@@ -199,66 +199,68 @@ const Users = () => {
 
     if (loading) {
         return (
-            <div className="w-full p-3">
-                <Card className="overflow-hidden border-border">
-                    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
-                        <h1 className="text-2xl font-bold">Users</h1>
+            <div className="w-full max-w-screen-xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8 overflow-x-auto">
+                <Card className="overflow-x-auto border-border">
+                    <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                        <h1 className="text-xl sm:text-2xl font-bold">Users</h1>
                         <Button variant="outline" size="sm" className="rounded-[0.5rem]" disabled>
                             Refresh
                         </Button>
                     </CardHeader>
-                    <ScrollArea className="w-full">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="w-[100px] text-center">ID</TableHead>
-                                    <TableHead className="w-[250px] text-center">User</TableHead>
-                                    <TableHead className="w-[200px] text-center">Email</TableHead>
-                                    <TableHead className="w-[150px] text-center">Username</TableHead>
-                                    <TableHead className="w-[150px] text-center">Role</TableHead>
-                                    <TableHead className="w-[150px] text-center">Status</TableHead>
-                                    <TableHead className="w-[150px] text-center">Last Sign In</TableHead>
-                                    <TableHead className="w-[80px] text-center">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-4 w-16 mx-auto" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-3">
-                                                <Skeleton className="h-9 w-9 rounded-full" />
-                                                <div className="space-y-2">
-                                                    <Skeleton className="h-4 w-24" />
-                                                    <Skeleton className="h-3 w-20" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-4 w-32 mx-auto" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-4 w-20 mx-auto" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-5 w-16 mx-auto rounded-full" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-5 w-16 mx-auto rounded-full" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-4 w-24 mx-auto" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Skeleton className="h-8 w-8 mx-auto rounded-md" />
-                                        </TableCell>
+                    <div className="overflow-x-auto">
+                        <ScrollArea className="w-full min-w-[900px]">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow>
+                                        <TableHead className="w-[100px] text-center">ID</TableHead>
+                                        <TableHead className="w-[250px] text-center">User</TableHead>
+                                        <TableHead className="w-[200px] text-center">Email</TableHead>
+                                        <TableHead className="w-[150px] text-center">Username</TableHead>
+                                        <TableHead className="w-[150px] text-center">Role</TableHead>
+                                        <TableHead className="w-[150px] text-center">Status</TableHead>
+                                        <TableHead className="w-[150px] text-center">Last Sign In</TableHead>
+                                        <TableHead className="w-[80px] text-center">Action</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
+                                </TableHeader>
+                                <TableBody>
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-4 w-16 mx-auto" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <Skeleton className="h-9 w-9 rounded-full" />
+                                                    <div className="space-y-2">
+                                                        <Skeleton className="h-4 w-24" />
+                                                        <Skeleton className="h-3 w-20" />
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-4 w-32 mx-auto" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-4 w-20 mx-auto" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-5 w-16 mx-auto rounded-full" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-5 w-16 mx-auto rounded-full" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-4 w-24 mx-auto" />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Skeleton className="h-8 w-8 mx-auto rounded-md" />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                    </div>
                 </Card>
             </div>
         )
@@ -266,7 +268,7 @@ const Users = () => {
 
     if (!users || users.length === 0) {
         return (
-            <div className="w-full p-4 md:p-8">
+            <div className="w-full max-w-screen-xl mx-auto p-4 md:p-8">
                 <Card>
                     <CardContent>
                         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -286,7 +288,7 @@ const Users = () => {
     }
 
     return (
-        <div className="w-full p-3">
+        <div className="w-full max-w-screen-xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8 overflow-x-auto">
             <ToastContainer
                 position="top-right"
                 autoClose={1000}
@@ -324,111 +326,113 @@ const Users = () => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <Card className="overflow-hidden border-border">
-                <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
-                    <h1 className="text-2xl font-bold">Users</h1>
+            <Card className="overflow-x-auto border-border">
+                <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                    <h1 className="text-xl sm:text-2xl font-bold">Users</h1>
                     <Button onClick={() => { fetchUsers() }} variant="outline" size="sm" className="rounded-[0.5rem]">
                         Refresh
                     </Button>
                 </CardHeader>
-                <ScrollArea className="w-full">
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="w-[100px] text-center">ID</TableHead>
-                                <TableHead className="w-[250px] text-center">User</TableHead>
-                                <TableHead className="w-[200px] text-center">Email</TableHead>
-                                <TableHead className="w-[150px] text-center">Username</TableHead>
-                                <TableHead className="w-[150px] text-center">Role</TableHead>
-                                <TableHead className="w-[150px] text-center">Status</TableHead>
-                                <TableHead className="w-[150px] text-center">Last Sign In</TableHead>
-                                <TableHead className="w-[80px] text-center">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {currentUsers?.map((user) => (
-                                <TableRow key={user.id} className="group hover:bg-muted/50 transition-colors">
-                                    <TableCell onClick={() => copyToClipboard(user.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={user.id}>
-                                        {truncateId(user.id)}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex items-center justify-center gap-3">
-                                            <div className="relative h-9 w-9 overflow-hidden rounded-full border bg-muted/20">
-                                                <Image
-                                                    src={user.imageUrl || "/placeholder.svg?height=36&width=36"}
-                                                    alt={`${user.firstName || ""} ${user.lastName || ""}`}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium leading-none">
-                                                    {user.firstName || user.username || "Unnamed"} {user.lastName || ""}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground mt-1">Created {formatDate(user.createdAt)}</span>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell onClick={() => copyToClipboard(user.email)} className="max-w-[200px] truncate text-center transform active:scale-95 cursor-pointer" title={user.email}>
-                                        {user.email || "N/A"}
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-center">{user.username || "N/A"}</TableCell>
-                                    <TableCell className="text-center">
-                                        <span
-                                            className={`${getRoleBadge(user.role)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
-                                        >
-                                            {getRoleIcon(user.role)}
-                                            {user.role}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span
-                                            className={`${getStatusColor(user.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
-                                        >
-                                            {user.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground text-center">
-                                        {formatDate(user.lastSignInAt)}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex justify-center">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                    >
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                        <span className="sr-only">Open menu</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="bg-white dark:bg-[#2B2B2B] z-50">
-                                                    <DropdownMenuItem>Edit user</DropdownMenuItem>
-                                                    <DropdownMenuItem className="cursor-pointer"><Link href={`/admin/users/${user.id}`}>View details</Link></DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        className={`
-                                                            ${user.status === "active"
-                                                                ? "text-rose-600 dark:text-rose-400"
-                                                                : "text-emerald-600 dark:text-emerald-400"}
-                                                            cursor-pointer
-                                                        `}
-                                                        onClick={() => handleStatusUpdate(user)}
-                                                    >
-                                                        {user.status === "active" ? "Block user" : "Activate user"}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </TableCell>
+                <div className="overflow-x-auto">
+                    <ScrollArea className="w-full min-w-[900px]">
+                        <Table>
+                            <TableHeader className="bg-muted/50">
+                                <TableRow>
+                                    <TableHead className="w-[100px] text-center">ID</TableHead>
+                                    <TableHead className="w-[250px] text-center">User</TableHead>
+                                    <TableHead className="w-[200px] text-center">Email</TableHead>
+                                    <TableHead className="w-[150px] text-center">Username</TableHead>
+                                    <TableHead className="w-[150px] text-center">Role</TableHead>
+                                    <TableHead className="w-[150px] text-center">Status</TableHead>
+                                    <TableHead className="w-[150px] text-center">Last Sign In</TableHead>
+                                    <TableHead className="w-[80px] text-center">Action</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
-                <div className="flex items-center justify-between px-6 py-4 border-t">
-                    <div className="text-sm text-muted-foreground">
+                            </TableHeader>
+                            <TableBody>
+                                {currentUsers?.map((user) => (
+                                    <TableRow key={user.id} className="group hover:bg-muted/50 transition-colors">
+                                        <TableCell onClick={() => copyToClipboard(user.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={user.id}>
+                                            {truncateId(user.id)}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-3">
+                                                <div className="relative h-9 w-9 overflow-hidden rounded-full border bg-muted/20">
+                                                    <Image
+                                                        src={user.imageUrl || "/placeholder.svg?height=36&width=36"}
+                                                        alt={`${user.firstName || ""} ${user.lastName || ""}`}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium leading-none">
+                                                        {user.firstName || user.username || "Unnamed"} {user.lastName || ""}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground mt-1">Created {formatDate(user.createdAt)}</span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell onClick={() => copyToClipboard(user.email)} className="max-w-[200px] truncate text-center transform active:scale-95 cursor-pointer" title={user.email}>
+                                            {user.email || "N/A"}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-center">{user.username || "N/A"}</TableCell>
+                                        <TableCell className="text-center">
+                                            <span
+                                                className={`${getRoleBadge(user.role)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                                            >
+                                                {getRoleIcon(user.role)}
+                                                {user.role}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <span
+                                                className={`${getStatusColor(user.status)} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                                            >
+                                                {user.status}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground text-center">
+                                            {formatDate(user.lastSignInAt)}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Open menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="bg-white dark:bg-[#2B2B2B] z-50">
+                                                        <DropdownMenuItem>Edit user</DropdownMenuItem>
+                                                        <DropdownMenuItem className="cursor-pointer"><Link href={`/admin/users/${user.id}`}>View details</Link></DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            className={`
+                                                                ${user.status === "active"
+                                                                    ? "text-rose-600 dark:text-rose-400"
+                                                                    : "text-emerald-600 dark:text-emerald-400"}
+                                                                cursor-pointer
+                                                            `}
+                                                            onClick={() => handleStatusUpdate(user)}
+                                                        >
+                                                            {user.status === "active" ? "Block user" : "Activate user"}
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </div>
+                <div className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-2 md:gap-0">
+                    <div className="text-sm text-muted-foreground mb-2 md:mb-0">
                         Showing {startIndex + 1} to {Math.min(endIndex, users.length)} of {users.length} users
                     </div>
                     <div className="flex items-center space-x-2">
@@ -441,7 +445,7 @@ const Users = () => {
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 overflow-x-auto">
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <Button
                                     key={page}

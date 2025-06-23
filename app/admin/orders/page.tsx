@@ -99,7 +99,7 @@ export default function OrdersPage() {
 
             setOrders(orders.map(order => 
                 order.id === orderId 
-                    ? { ...order, status: newStatus }
+                    ? { ...order, delivery_status: newStatus }
                     : order
             ));
             toast.success('Order status updated successfully');
@@ -274,49 +274,51 @@ export default function OrdersPage() {
 
     if (isLoading) {
         return (
-            <div className="w-full p-3">
-                <Card className="overflow-hidden border-border">
-                    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
-                        <h1 className="text-2xl font-bold">Orders</h1>
+            <div className="w-full max-w-screen-xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8 overflow-x-auto">
+                <Card className="overflow-x-auto border-border">
+                    <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                        <h1 className="text-xl sm:text-2xl font-bold">Orders</h1>
                         <Button variant="outline" size="sm" className="rounded-[0.5rem]" disabled>
                             Refresh
                         </Button>
                     </CardHeader>
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="w-[100px] text-center">Order ID</TableHead>
-                                <TableHead className="w-[150px] text-center">User ID</TableHead>
-                                <TableHead className="w-[150px] text-center">Amount</TableHead>
-                                <TableHead className="w-[150px] text-center">Payment Status</TableHead>
-                                <TableHead className="w-[150px] text-center">Delivery Status</TableHead>
-                                <TableHead className="w-[200px] text-center">Order Date</TableHead>
-                                <TableHead className="w-[200px] text-center">Delivered Date</TableHead>
-                                <TableHead className="w-[80px] text-center">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Array.from({ length: 5 }).map((_, index) => (
-                                <TableRow key={index}>
-                                    <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[80px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[150px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[150px] mx-auto" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-[40px] mx-auto" /></TableCell>
+                    <div className="overflow-x-auto">
+                        <Table className="min-w-[900px]">
+                            <TableHeader className="bg-muted/50">
+                                <TableRow>
+                                    <TableHead className="w-[100px] text-center">Order ID</TableHead>
+                                    <TableHead className="w-[150px] text-center">User ID</TableHead>
+                                    <TableHead className="w-[150px] text-center">Amount</TableHead>
+                                    <TableHead className="w-[150px] text-center">Payment Status</TableHead>
+                                    <TableHead className="w-[150px] text-center">Delivery Status</TableHead>
+                                    <TableHead className="w-[200px] text-center">Order Date</TableHead>
+                                    <TableHead className="w-[200px] text-center">Delivered Date</TableHead>
+                                    <TableHead className="w-[80px] text-center">Action</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[80px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[100px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[150px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[150px] mx-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[40px] mx-auto" /></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </Card>
             </div>
         )
     }
 
     return (
-        <div className="w-full p-3">
+        <div className="w-full max-w-screen-xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8 overflow-x-auto">
             <ToastContainer
                 position="top-right"
                 autoClose={1000}
@@ -330,88 +332,90 @@ export default function OrdersPage() {
                 theme="light"
                 transition={Bounce}
             />
-            <Card className="overflow-hidden border-border">
-                <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b">
-                    <h1 className="text-2xl font-bold">Orders</h1>
+            <Card className="overflow-x-auto border-border">
+                <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                    <h1 className="text-xl sm:text-2xl font-bold">Orders</h1>
                     <Button onClick={() => fetchOrders()} variant="outline" size="sm" className="rounded-[0.5rem]">
                         Refresh
                     </Button>
                 </CardHeader>
-                <Table>
-                    <TableHeader className="bg-muted/50">
-                        <TableRow>
-                            <TableHead className="w-[100px] text-center">Order ID</TableHead>
-                            <TableHead className="w-[150px] text-center">User ID</TableHead>
-                            <TableHead className="w-[150px] text-center">Amount</TableHead>
-                            <TableHead className="w-[150px] text-center">Payment Status</TableHead>
-                            <TableHead className="w-[150px] text-center">Delivery Status</TableHead>
-                            <TableHead className="w-[200px] text-center">Order Date</TableHead>
-                            <TableHead className="w-[200px] text-center">Delivered Date</TableHead>
-                            <TableHead className="w-[80px] text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {orders.map((order) => (
-                            <TableRow key={order.id} className="group hover:bg-muted/50 transition-colors">
-                                <TableCell onClick={() => copyToClipboard(order.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={String(order.id)}>
-                                    {truncateId(order.id)}
-                                </TableCell>
-                                <TableCell onClick={() => copyToClipboard(order.user_id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={String(order.user_id)}>
-                                    {truncateId(order.user_id)}
-                                </TableCell>
-                                <TableCell className="text-center font-medium">
-                                    {formatCurrency(Number(order.total_amount))}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    {renderStatusBadge(order.payment_status)}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    {renderStatusBadge(order.delivery_status)}
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground text-center">
-                                    {formatDate(order.created_at)}
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground text-center">
-                                    {order.delivery_status === 'Delivered' ? formatDate(order.created_at) : 'N/A'}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
-                                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => {
-                                                setSelectedOrder(order);
-                                                setShowStatusDialog(true);
-                                            }}>
-                                                Update Status
-                                            </DropdownMenuItem>
-                                            {order.delivery_status !== 'Delivered' && (
-                                                <>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem 
-                                                        className="text-rose-600"
-                                                        onClick={() => {
-                                                            setSelectedOrder(order);
-                                                            setShowCancelDialog(true);
-                                                        }}
-                                                    >
-                                                        Cancel Order
-                                                    </DropdownMenuItem>
-                                                </>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
+                <div className="overflow-x-auto">
+                    <Table className="min-w-[900px]">
+                        <TableHeader className="bg-muted/50">
+                            <TableRow>
+                                <TableHead className="w-[100px] text-center">Order ID</TableHead>
+                                <TableHead className="w-[150px] text-center">User ID</TableHead>
+                                <TableHead className="w-[150px] text-center">Amount</TableHead>
+                                <TableHead className="w-[150px] text-center">Payment Status</TableHead>
+                                <TableHead className="w-[150px] text-center">Delivery Status</TableHead>
+                                <TableHead className="w-[200px] text-center">Order Date</TableHead>
+                                <TableHead className="w-[200px] text-center">Delivered Date</TableHead>
+                                <TableHead className="w-[80px] text-center">Action</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                <div className="flex items-center justify-between px-6 py-4 border-t">
-                    <div className="text-sm text-muted-foreground">
+                        </TableHeader>
+                        <TableBody>
+                            {orders.map((order) => (
+                                <TableRow key={order.id} className="group hover:bg-muted/50 transition-colors">
+                                    <TableCell onClick={() => copyToClipboard(order.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={String(order.id)}>
+                                        {truncateId(order.id)}
+                                    </TableCell>
+                                    <TableCell onClick={() => copyToClipboard(order.user_id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={String(order.user_id)}>
+                                        {truncateId(order.user_id)}
+                                    </TableCell>
+                                    <TableCell className="text-center font-medium">
+                                        {formatCurrency(Number(order.total_amount))}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {renderStatusBadge(order.payment_status)}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {renderStatusBadge(order.delivery_status)}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground text-center">
+                                        {formatDate(order.created_at)}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground text-center">
+                                        {order.delivery_status === 'Delivered' ? formatDate(order.created_at) : 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="bg-[#F5F5DC] dark:bg-[#2B2B2B]">
+                                                <DropdownMenuItem>View Details</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => {
+                                                    setSelectedOrder(order);
+                                                    setShowStatusDialog(true);
+                                                }}>
+                                                    Update Status
+                                                </DropdownMenuItem>
+                                                {order.delivery_status !== 'Delivered' && (
+                                                    <>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem 
+                                                            className="text-rose-600"
+                                                            onClick={() => {
+                                                                setSelectedOrder(order);
+                                                                setShowCancelDialog(true);
+                                                            }}
+                                                        >
+                                                            Cancel Order
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                <div className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-2 md:gap-0">
+                    <div className="text-sm text-muted-foreground mb-2 md:mb-0">
                         Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalOrders)} of {totalOrders} orders
                     </div>
                     <div className="flex items-center space-x-2">
@@ -424,7 +428,7 @@ export default function OrdersPage() {
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 overflow-x-auto">
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <Button
                                     key={page}
