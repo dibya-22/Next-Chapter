@@ -48,7 +48,7 @@ import {
     ChevronDown,
     ChevronUp,
 } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate, capitalizeFirstLetter } from "@/lib/utils"
 import Link from "next/link"
 
 interface OrderItem {
@@ -642,7 +642,7 @@ const UserProfile = () => {
                                                         className={`${getStatusColor(order.payment_status || '')} rounded-full px-3 py-1 w-fit`}
                                                     >
                                                         {getPaymentStatusIcon(order.payment_status || '')}
-                                                        <span className="ml-1.5">{order.payment_status}</span>
+                                                        <span className="ml-1.5">{capitalizeFirstLetter(order.payment_status)}</span>
                                                     </Badge>
                                                     <Badge 
                                                         variant="outline" 

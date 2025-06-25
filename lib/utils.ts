@@ -22,3 +22,8 @@ export function getMonth(datenow: string | null = new Date().toISOString()) {
     const date = new Date(datenow);
     return date.toLocaleString('en-US', { month: 'long' });
 }
+
+export function capitalizeFirstLetter(str: string): string {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
