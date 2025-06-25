@@ -38,6 +38,19 @@ export async function POST(request: Request) {
         if (status === 'Delivered') {
             updateQuery = `UPDATE orders SET delivery_status = $1, delivered_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`;
             params = [status, orderId];
+            const result = await client.query(updateQuery, params);
+            if (result.rows.length === 0) {
+                return NextResponse.json({ error: "Order not found" }, { status: 404 });
+            }
+            await client.query(
+                `UPDATE books
+                    SET total_sold = total_sold + oi.quantity
+                    FROM order_items oi
+                    WHERE books.id = oi.book_id AND oi.order_id = $1`,
+                [orderId]
+            );
+            const updatedOrder: OrderRecord = result.rows[0];
+            return NextResponse.json(updatedOrder);
         } else if (status === 'Cancelled') {
             try {
                 await client.query('BEGIN');
