@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
                 FROM orders o
                 LEFT JOIN order_items oi ON o.id = oi.order_id
                 LEFT JOIN books b ON oi.book_id = b.id
-                WHERE o.user_id = $1
+                WHERE o.user_id = $1 AND payment_status != 'pending'
                 GROUP BY o.id
                 ORDER BY o.created_at DESC
             `;
