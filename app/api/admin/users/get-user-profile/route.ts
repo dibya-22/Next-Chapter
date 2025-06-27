@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
                     o.delivery_status,
                     o.tracking_number,
                     o.shipping_address,
+                    o.is_reviewed,
                     COALESCE(SUM(oi.price_at_time * oi.quantity), 0) AS total_spent,
                     json_agg(
                         jsonb_build_object(

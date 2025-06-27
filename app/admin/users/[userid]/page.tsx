@@ -71,6 +71,7 @@ interface Order {
     shipping_address?: string
     total_spent: number
     items: OrderItem[]
+    is_reviewed: boolean
 }
 
 interface UserInfo {

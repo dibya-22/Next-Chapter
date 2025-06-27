@@ -5,14 +5,16 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, ChevronUp } from "lucide-react"
-import OrderStatusBar from "@/components/order-status-bar";
+import OrderStatusBar from "@/components/order/order-status-bar";
+import BookReview from "@/components/order/book-review";
 import { formatDate } from "@/lib/utils";
-import { OrderSkeleton } from "@/components/order-skeleton";
+import { OrderSkeleton } from "@/components/order/order-skeleton";
 
 interface OrderItem {
     id: number;
+    book_id: number;
     title: string;
-    authors: string;
+    authors?: string[];
     thumbnail: string;
     quantity: number;
     price_at_time: number;
@@ -27,6 +29,7 @@ interface Order {
     shipping_address: string;
     items: OrderItem[];
     payment_status: string;
+    is_reviewed: boolean;
 }
 
 const Order = () => {
@@ -36,28 +39,33 @@ const Order = () => {
     const [error, setError] = useState<string | null>(null);
     const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await fetch('/api/orders');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch orders');
-                }
-                const data = await response.json();
-                setOrders(data);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch orders');
-            } finally {
-                setLoading(false);
+    const fetchOrders = async () => {
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders');
             }
-        };
+            const data = await response.json();
+            setOrders(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (isLoaded && isSignedIn) {
             fetchOrders();
         } else if (isLoaded && !isSignedIn) {
             setLoading(false);
         }
     }, [isLoaded, isSignedIn]);
+
+    const handleReviewSubmitted = () => {
+        // Refresh orders to update the is_reviewed status
+        fetchOrders();
+    };
 
     const toggleOrderExpansion = (orderId: number) => {
         setExpandedOrders((prev) => ({
@@ -127,10 +135,10 @@ const Order = () => {
                                                 <h2 className="text-base font-bold">Order #{order.id}</h2>
                                                 <span
                                                     className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${order.delivery_status === "Delivered"
-                                                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                            : order.delivery_status === "Shipped" || order.delivery_status === "Out for Delivery"
-                                                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                                                : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                        : order.delivery_status === "Shipped" || order.delivery_status === "Out for Delivery"
+                                                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                            : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
                                                         }`}
                                                 >
                                                     {order.delivery_status || 'Order Placed'}
@@ -168,10 +176,10 @@ const Order = () => {
                                             <h2 className="text-base sm:text-lg font-bold">Order #{order.id}</h2>
                                             <span
                                                 className={`px-2 py-1 text-xs rounded-full w-fit ${order.delivery_status === "Delivered"
-                                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                        : order.delivery_status === "Shipped" || order.delivery_status === "Out for Delivery"
-                                                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                                            : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                    : order.delivery_status === "Shipped" || order.delivery_status === "Out for Delivery"
+                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                        : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
                                                     }`}
                                             >
                                                 {order.delivery_status || 'Order Placed'}
@@ -201,32 +209,32 @@ const Order = () => {
 
                             {isExpanded && (
                                 <div className="p-4 sm:p-5">
-                                    {order.delivery_status !== "Cancelled" ? 
-                                    <div className="mb-4 sm:mb-6">
-                                        <OrderStatusBar
-                                            currentStatus={
-                                                order.delivery_status as
-                                                | "Order Placed"
-                                                | "Processing"
-                                                | "Shipped"
-                                                | "Out for Delivery"
-                                                | "Delivered"
-                                            }
-                                        />
-                                        <div className="text-xs sm:text-sm text-center text-gray-600 dark:text-gray-400 mt-2">
-                                            Estimated Delivery:{" "}
-                                            <span className="font-medium">{formatDate(order.estimated_delivery_date)}</span>
+                                    {order.delivery_status !== "Cancelled" ?
+                                        <div className="mb-4 sm:mb-6">
+                                            <OrderStatusBar
+                                                currentStatus={
+                                                    order.delivery_status as
+                                                    | "Order Placed"
+                                                    | "Processing"
+                                                    | "Shipped"
+                                                    | "Out for Delivery"
+                                                    | "Delivered"
+                                                }
+                                            />
+                                            <div className="text-xs sm:text-sm text-center text-gray-600 dark:text-gray-400 mt-2">
+                                                Estimated Delivery:{" "}
+                                                <span className="font-medium">{formatDate(order.estimated_delivery_date)}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    :
-                                    <div className='p-4 sm:p-5 flex flex-col items-center justify-center text-center'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 sm:w-12 sm:h-12 text-red-500 mb-2 sm:mb-3">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Order Cancelled</h3>
-                                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This order has been cancelled.</p>
-                                    </div>
-                                }
+                                        :
+                                        <div className='p-4 sm:p-5 flex flex-col items-center justify-center text-center'>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 sm:w-12 sm:h-12 text-red-500 mb-2 sm:mb-3">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Order Cancelled</h3>
+                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This order has been cancelled.</p>
+                                        </div>
+                                    }
 
                                     <div className="address mb-4 sm:mb-6">
                                         <h3 className="text-base sm:text-lg font-bold mb-2">Shipping Address</h3>
@@ -241,28 +249,43 @@ const Order = () => {
                                             {order.items.map((item, index) => (
                                                 <div
                                                     key={item.id}
-                                                    className={`flex items-center p-3 sm:p-4 ${index !== order.items.length - 1 ? "border-b border-gray-200 dark:border-gray-600" : ""
+                                                    className={`p-3 sm:p-4 ${index !== order.items.length - 1 ? "border-b border-gray-200 dark:border-gray-600" : ""
                                                         }`}
                                                 >
-                                                    <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 relative rounded-md overflow-hidden">
-                                                        <Image
-                                                            src={item.thumbnail || "/placeholder.svg"}
-                                                            alt={item.title}
-                                                            fill
-                                                            className="object-cover"
-                                                            sizes="(max-width: 640px) 48px, 64px"
-                                                        />
-                                                    </div>
-                                                    <div className="ml-3 sm:ml-4 flex-1 min-w-0">
-                                                        <h4 className="text-sm sm:text-md font-semibold line-clamp-2">{item.title}</h4>
-                                                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">by {item.authors}</p>
-                                                        <div className="flex justify-between items-center mt-1">
-                                                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">
-                                                                ₹{item.price_at_time.toFixed(2)} × {item.quantity}
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 relative rounded-md overflow-hidden">
+                                                            <Image
+                                                                src={item.thumbnail || "/placeholder.svg"}
+                                                                alt={item.title}
+                                                                fill
+                                                                className="object-cover"
+                                                                sizes="(max-width: 640px) 48px, 64px"
+                                                            />
+                                                        </div>
+                                                        <div className="ml-3 sm:ml-4 flex-1 min-w-0">
+                                                            <h4 className="text-sm sm:text-md font-semibold line-clamp-2">{item.title}</h4>
+                                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                                                by {Array.isArray(item.authors) ? item.authors.join(', ') : 'Unknown Author'}
                                                             </p>
-                                                            <p className="text-sm sm:text-base font-medium">₹{(item.price_at_time * item.quantity).toFixed(2)}</p>
+                                                            <div className="flex justify-between items-center mt-1">
+                                                                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">
+                                                                    ₹{item.price_at_time.toFixed(2)} × {item.quantity}
+                                                                </p>
+                                                                <p className="text-sm sm:text-base font-medium">₹{(item.price_at_time * item.quantity).toFixed(2)}</p>
+                                                            </div>
                                                         </div>
                                                     </div>
+                                                    
+                                                    {/* Show review component for delivered orders that haven't been reviewed */}
+                                                    {order.delivery_status === 'Delivered' && !order.is_reviewed && (
+                                                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                                            <BookReview
+                                                                orderId={order.id}
+                                                                bookId={item.book_id}
+                                                                onReviewSubmitted={handleReviewSubmitted}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -275,7 +298,7 @@ const Order = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                                    <div className='flex flex-col sm:flex-row justify-end gap-2 sm:gap-3'>
                                         {order.tracking_number && (
                                             <Button variant="outline" className="text-xs sm:text-sm">Track Package</Button>
                                         )}

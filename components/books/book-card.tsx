@@ -158,25 +158,25 @@ export function BookCard({ book }: BookCardProps) {
                         <div className="space-y-2 my-2 sm:my-3">
                             <div className="rating flex items-center gap-2">
                                 <div className="flex items-center gap-0.5">
-                                    {[1, 2, 3, 4, 5].map((star) => {
-                                        const filled = star <= Math.floor(book.rating)
-                                        const halfFilled = star === Math.ceil(book.rating) && !Number.isInteger(book.rating)
-
-                                        return halfFilled ? (
-                                            <StarHalf key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                        ) : (
-                                            <Star
-                                                key={star}
-                                                className={`w-3 h-3 ${filled
-                                                        ? "fill-yellow-400 text-yellow-400"
-                                                        : "fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600"
-                                                    }`}
-                                            />
-                                        )
-                                    })}
+                                    {(() => {
+                                        const stars = [];
+                                        const rating = Math.max(0, Math.min(5, Number(book.rating)));
+                                        const fullStars = Math.floor(rating);
+                                        const hasHalfStar = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
+                                        for (let i = 1; i <= 5; i++) {
+                                            if (i <= fullStars) {
+                                                stars.push(<Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />);
+                                            } else if (i === fullStars + 1 && hasHalfStar) {
+                                                stars.push(<StarHalf key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />);
+                                            } else {
+                                                stars.push(<Star key={i} className="w-3 h-3 fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600" />);
+                                            }
+                                        }
+                                        return stars;
+                                    })()}
                                 </div>
                                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                    {book.rating < 0 ? "0" : book.rating > 5 ? "5" : book.rating}
+                                    {book.rating < 0 ? "0" : book.rating > 5 ? "5" : Number(book.rating).toFixed(1).replace(/\.0$/, "")}
                                 </span>
                             </div>
 
@@ -259,25 +259,25 @@ export function BookCard({ book }: BookCardProps) {
                         {/* Rating Section */}
                         <div className="rating flex items-center gap-2 mb-1">
                             <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => {
-                                    const filled = star <= Math.floor(book.rating)
-                                    const halfFilled = star === Math.ceil(book.rating) && !Number.isInteger(book.rating)
-
-                                    return halfFilled ? (
-                                        <StarHalf key={star} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-                                    ) : (
-                                        <Star
-                                            key={star}
-                                            className={`w-3 h-3 sm:w-4 sm:h-4 ${filled
-                                                    ? "fill-yellow-400 text-yellow-400"
-                                                    : "fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600"
-                                                }`}
-                                        />
-                                    )
-                                })}
+                                {(() => {
+                                    const stars = [];
+                                    const rating = Math.max(0, Math.min(5, Number(book.rating)));
+                                    const fullStars = Math.floor(rating);
+                                    const hasHalfStar = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
+                                    for (let i = 1; i <= 5; i++) {
+                                        if (i <= fullStars) {
+                                            stars.push(<Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />);
+                                        } else if (i === fullStars + 1 && hasHalfStar) {
+                                            stars.push(<StarHalf key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />);
+                                        } else {
+                                            stars.push(<Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600" />);
+                                        }
+                                    }
+                                    return stars;
+                                })()}
                             </div>
                             <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {book.rating < 0 ? "0" : book.rating > 5 ? "5" : book.rating}
+                                {book.rating < 0 ? "0" : book.rating > 5 ? "5" : Number(book.rating).toFixed(1).replace(/\.0$/, "")}
                             </span>
                         </div>
 

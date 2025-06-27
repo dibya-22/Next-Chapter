@@ -20,6 +20,7 @@ export async function GET() {
                 o.shipping_address,
                 o.created_at,
                 o.estimated_delivery_date,
+                o.is_reviewed,
                 json_agg(
                     json_build_object(
                         'id', oi.id,
@@ -27,6 +28,7 @@ export async function GET() {
                         'quantity', oi.quantity,
                         'price_at_time', oi.price_at_time,
                         'title', b.title,
+                        'authors', COALESCE(b.authors, '{}'),
                         'thumbnail', b.thumbnail
                     )
                 ) as items
@@ -46,6 +48,7 @@ export async function GET() {
             quantity: number;
             price_at_time: number;
             title: string;
+            authors: string[];
             thumbnail: string;
         };
 

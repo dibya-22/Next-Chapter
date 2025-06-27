@@ -13,6 +13,34 @@ interface OrderRecord {
     payment_status: string;
     delivered_date: string | null;
     updated_at: string;
+    is_reviewed: boolean;
+}
+
+/**
+ * * Format: NC-ORD-YYYYMMDD-XXXXXX
+ * 
+ * ? Breakdown:
+ * * NC      → Next Chapter (your brand)
+ * * ORD     → Stands for Order
+ * * YYYYMMDD → Date the tracking number was generated (e.g. 20250627)
+ * * XXXXXX  → Random alphanumeric string (secure & unique)
+ * 
+ * TODO: Ensure this is called only when status === 'hipped'
+ */
+function generateTrackingNumber() {
+    const brand = "NC";
+    const type = "ORD";
+    const date = new Date();
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}${mm}${dd}`;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let rand = '';
+    for (let i = 0; i < 6; i++) {
+        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `${brand}-${type}-${dateStr}-${rand}`;
 }
 
 export async function POST(request: Request) {
@@ -56,7 +84,7 @@ export async function POST(request: Request) {
                 await client.query('BEGIN');
                 // Update order
                 const orderResult = await client.query(
-                    `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', updated_at = NOW() WHERE id = $2 RETURNING *`,
+                    `UPDATE orders SET delivery_status = $1, payment_status = 'refunded', tracking_number = NULL, updated_at = NOW() WHERE id = $2 RETURNING *`,
                     [status, orderId]
                 );
                 // Update payment(s) for this order
@@ -75,6 +103,11 @@ export async function POST(request: Request) {
                 console.error("Error updating order and payment status:", err);
                 return NextResponse.json({ error: "Internal server error" }, { status: 500 });
             }
+        } else if (status === 'Shipped') {
+            // Set tracking number when shipped
+            const trackingNumber = generateTrackingNumber();
+            updateQuery = `UPDATE orders SET delivery_status = $1, tracking_number = $2, updated_at = NOW() WHERE id = $3 RETURNING *`;
+            params = [status, trackingNumber, orderId];
         } else {
             updateQuery = `UPDATE orders SET delivery_status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`;
             params = [status, orderId];
