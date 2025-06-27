@@ -64,6 +64,10 @@ This is a demonstration project:
   - Order status tracking
   - Secure payment integration with Razorpay
 
+- 📝 **User Reviews and Ratings**
+  - Users can leave reviews and ratings for books
+  - Ratings are displayed on book pages
+
 - 🎨 **UI/UX**
   - Modern, responsive design
   - Dark/Light theme support
@@ -72,7 +76,6 @@ This is a demonstration project:
 
 ### Coming Soon
 - [ ] Advanced search and filtering
-- [ ] User reviews and ratings
 - [ ] Wishlist functionality
 - [ ] Social sharing features
 - [ ] Enhanced admin dashboard
