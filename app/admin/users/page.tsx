@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, UserCog, Shield, UserIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { MoreHorizontal, UserCog, Shield, UserIcon, ChevronLeft, ChevronRight, X } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -51,6 +52,7 @@ const Users = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+    const [searchQuery, setSearchQuery] = useState<string>("")
     const itemsPerPage = 10
 
     const fetchUsers = async () => {
@@ -183,10 +185,31 @@ const Users = () => {
         })
     }
 
-    const totalPages = users ? Math.ceil(users.length / itemsPerPage) : 0
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
     const currentUsers = users?.slice(startIndex, endIndex)
+
+    // Filter users based on search query
+    const filteredUsers = users?.filter(user => {
+        if (!searchQuery.trim()) return true;
+        
+        const query = searchQuery.toLowerCase();
+        return (
+            String(user.id).toLowerCase().includes(query) ||
+            String(user.email).toLowerCase().includes(query) ||
+            String(user.username || '').toLowerCase().includes(query) ||
+            String(user.role).toLowerCase().includes(query) ||
+            String(user.status).toLowerCase().includes(query) ||
+            String(user.firstName || '').toLowerCase().includes(query) ||
+            String(user.lastName || '').toLowerCase().includes(query)
+        );
+    }) || [];
+
+    // Pagination for filtered results
+    const filteredTotalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const filteredStartIndex = (currentPage - 1) * itemsPerPage;
+    const filteredEndIndex = filteredStartIndex + itemsPerPage;
+    const paginatedUsers = searchQuery ? filteredUsers.slice(filteredStartIndex, filteredEndIndex) : currentUsers;
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
@@ -327,11 +350,31 @@ const Users = () => {
                 </AlertDialogContent>
             </AlertDialog>
             <Card className="overflow-x-auto border-border">
-                <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b gap-4 sm:gap-0">
                     <h1 className="text-xl sm:text-2xl font-bold">Users</h1>
-                    <Button onClick={() => { fetchUsers() }} variant="outline" size="sm" className="rounded-[0.5rem]">
-                        Refresh
-                    </Button>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-auto">
+                            <Input
+                                placeholder="Search users..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-3 pr-10 w-full sm:w-64 rounded-[0.5rem]"
+                            />
+                            {searchQuery && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            )}
+                        </div>
+                        <Button onClick={() => { fetchUsers() }} variant="outline" size="sm" className="rounded-[0.5rem]">
+                            Refresh
+                        </Button>
+                    </div>
                 </CardHeader>
                 <div className="overflow-x-auto">
                     <ScrollArea className="w-full min-w-[900px]">
@@ -349,7 +392,7 @@ const Users = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {currentUsers?.map((user) => (
+                                {paginatedUsers?.map((user) => (
                                     <TableRow key={user.id} className="group hover:bg-muted/50 transition-colors">
                                         <TableCell onClick={() => copyToClipboard(user.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={user.id}>
                                             {truncateId(user.id)}
@@ -433,7 +476,11 @@ const Users = () => {
                 </div>
                 <div className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-2 md:gap-0">
                     <div className="text-sm text-muted-foreground mb-2 md:mb-0">
-                        Showing {startIndex + 1} to {Math.min(endIndex, users.length)} of {users.length} users
+                        {searchQuery ? (
+                            `Showing ${filteredUsers.length} of ${users?.length || 0} users (filtered)`
+                        ) : (
+                            `Showing ${startIndex + 1} to ${Math.min(endIndex, users?.length || 0)} of ${users?.length || 0} users`
+                        )}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
@@ -446,7 +493,7 @@ const Users = () => {
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div className="flex items-center gap-1 overflow-x-auto">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            {Array.from({ length: searchQuery ? filteredTotalPages : Math.ceil((users?.length || 0) / itemsPerPage) }, (_, i) => i + 1).map((page) => (
                                 <Button
                                     key={page}
                                     variant={currentPage === page ? "default" : "outline"}
@@ -462,7 +509,7 @@ const Users = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === (searchQuery ? filteredTotalPages : Math.ceil((users?.length || 0) / itemsPerPage))}
                             className="rounded-[0.5rem]"
                         >
                             <ChevronRight className="h-4 w-4" />

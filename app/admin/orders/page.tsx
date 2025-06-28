@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ChevronLeft, ChevronRight, BadgeCheck, XCircle, Clock, Truck, Package, PackageCheck, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MoreHorizontal, ChevronLeft, ChevronRight, BadgeCheck, XCircle, Clock, Truck, Package, PackageCheck, Loader2, X } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,6 +62,7 @@ export default function OrdersPage() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [selectedNewStatus, setSelectedNewStatus] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>("");
 
     const fetchOrders = useCallback(async () => {
         if (!userId || !isLoaded) return;
@@ -161,6 +163,27 @@ export default function OrdersPage() {
     }
 
     const totalPages = Math.ceil(totalOrders / itemsPerPage);
+
+    // Filter orders based on search query
+    const filteredOrders = orders.filter(order => {
+        if (!searchQuery.trim()) return true;
+        
+        const query = searchQuery.toLowerCase();
+        return (
+            String(order.id).toLowerCase().includes(query) ||
+            String(order.user_id).toLowerCase().includes(query) ||
+            String(order.payment_status).toLowerCase().includes(query) ||
+            String(order.delivery_status).toLowerCase().includes(query) ||
+            String(order.user_name || '').toLowerCase().includes(query) ||
+            String(order.user_email || '').toLowerCase().includes(query)
+        );
+    });
+
+    // Pagination for filtered results
+    const filteredTotalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedOrders = searchQuery ? filteredOrders.slice(startIndex, endIndex) : filteredOrders;
 
     const handlePageChange = (page: number) => {
         if (page < 1 || page > totalPages) return
@@ -334,11 +357,31 @@ export default function OrdersPage() {
                 transition={Bounce}
             />
             <Card className="overflow-x-auto border-border">
-                <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b gap-4 sm:gap-0">
                     <h1 className="text-xl sm:text-2xl font-bold">Orders</h1>
-                    <Button onClick={fetchOrders} variant="outline" size="sm" className="rounded-[0.5rem]" disabled={isLoading}>
-                        {isLoading ? 'Refreshing...' : 'Refresh'}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-auto">
+                            <Input
+                                placeholder="Search orders..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-3 pr-10 w-full sm:w-64 rounded-[0.5rem]"
+                            />
+                            {searchQuery && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            )}
+                        </div>
+                        <Button onClick={fetchOrders} variant="outline" size="sm" className="rounded-[0.5rem]" disabled={isLoading}>
+                            {isLoading ? 'Refreshing...' : 'Refresh'}
+                        </Button>
+                    </div>
                 </CardHeader>
                 <div className="overflow-x-auto">
                     <Table className="min-w-[900px]">
@@ -355,7 +398,7 @@ export default function OrdersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orders.map((order) => (
+                            {paginatedOrders.map((order) => (
                                 <TableRow key={order.id} className="group hover:bg-muted/50 transition-colors">
                                     <TableCell onClick={() => copyToClipboard(order.id)} className="font-mono text-xs text-muted-foreground text-center transform active:scale-95 cursor-pointer" title={String(order.id)}>
                                         {truncateId(order.id)}
@@ -417,7 +460,11 @@ export default function OrdersPage() {
                 </div>
                 <div className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-2 md:gap-0">
                     <div className="text-sm text-muted-foreground mb-2 md:mb-0">
-                        Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalOrders)} of {totalOrders} orders
+                        {searchQuery ? (
+                            `Showing ${filteredOrders.length} of ${totalOrders} orders (filtered)`
+                        ) : (
+                            `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalOrders)} of ${totalOrders} orders`
+                        )}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
@@ -430,7 +477,7 @@ export default function OrdersPage() {
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div className="flex items-center gap-1 overflow-x-auto">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            {Array.from({ length: searchQuery ? filteredTotalPages : totalPages }, (_, i) => i + 1).map((page) => (
                                 <Button
                                     key={page}
                                     variant={currentPage === page ? "default" : "outline"}
@@ -446,7 +493,7 @@ export default function OrdersPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === (searchQuery ? filteredTotalPages : totalPages)}
                             className="rounded-[0.5rem]"
                         >
                             <ChevronRight className="h-4 w-4" />
