@@ -66,22 +66,27 @@ export default function OrdersPage() {
         if (!userId || !isLoaded) return;
 
         try {
-            const response = await fetch('/api/admin/orders/get-orders');
+            setIsLoading(true);
+            const response = await fetch(`/api/admin/orders/get-orders?page=${currentPage}&limit=${itemsPerPage}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch orders');
+                throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
             setOrders(data.orders);
             setTotalOrders(data.total);
-        } catch {
+        } catch (error) {
+            console.error('Error fetching orders:', error);
             toast.error('Failed to load orders');
         } finally {
             setIsLoading(false);
         }
-    }, [userId, isLoaded]);
+    }, [userId, isLoaded, currentPage, itemsPerPage]);
 
     useEffect(() => {
-        fetchOrders();
+        fetchOrders().catch(error => {
+            console.error('Error fetching orders:', error);
+            toast.error('Failed to load orders');
+        });
     }, [fetchOrders]);
 
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
@@ -98,12 +103,9 @@ export default function OrdersPage() {
                 throw new Error('Failed to update order status');
             }
 
-            setOrders(orders.map(order => 
-                order.id === orderId 
-                    ? { ...order, delivery_status: newStatus }
-                    : order
-            ));
             toast.success('Order status updated successfully');
+            // Refresh the orders to get the latest data
+            await fetchOrders();
         } catch {
             toast.error('Failed to update order status');
         }
@@ -185,7 +187,6 @@ export default function OrdersPage() {
         try {
             setActionLoading('updating');
             await handleStatusUpdate(selectedOrder.id, selectedNewStatus);
-            fetchOrders();
         } catch (error) {
             console.error('Error updating order status:', error);
             toast.error('Failed to update order status');
@@ -204,7 +205,6 @@ export default function OrdersPage() {
         try {
             setActionLoading('cancelling');
             await handleStatusUpdate(selectedOrder.id, 'Cancelled');
-            fetchOrders();
         } catch (error) {
             console.error('Error cancelling order:', error);
             toast.error('Failed to cancel order');
@@ -336,8 +336,8 @@ export default function OrdersPage() {
             <Card className="overflow-x-auto border-border">
                 <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b">
                     <h1 className="text-xl sm:text-2xl font-bold">Orders</h1>
-                    <Button onClick={() => fetchOrders()} variant="outline" size="sm" className="rounded-[0.5rem]">
-                        Refresh
+                    <Button onClick={fetchOrders} variant="outline" size="sm" className="rounded-[0.5rem]" disabled={isLoading}>
+                        {isLoading ? 'Refreshing...' : 'Refresh'}
                     </Button>
                 </CardHeader>
                 <div className="overflow-x-auto">
