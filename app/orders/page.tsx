@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react'
 import { useUser, SignInButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp, X } from "lucide-react"
 import OrderStatusBar from "@/components/order/order-status-bar";
 import BookReview from "@/components/order/book-review";
 import { formatDate } from "@/lib/utils";
@@ -38,6 +39,7 @@ const Order = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
+    const [searchQuery, setSearchQuery] = useState<string>("");
 
     const fetchOrders = async () => {
         try {
@@ -112,12 +114,59 @@ const Order = () => {
         );
     }
 
+    // Filter orders based on search query
+    const filteredOrders = orders.filter(order => {
+        if (!searchQuery.trim()) return true;
+        
+        const query = searchQuery.toLowerCase();
+        const totalAmount = order.items.reduce((sum, item) => sum + (item.price_at_time * item.quantity), 0);
+        
+        return (
+            String(order.id).toLowerCase().includes(query) ||
+            String(order.delivery_status || '').toLowerCase().includes(query) ||
+            String(totalAmount).toLowerCase().includes(query) ||
+            String(order.shipping_address).toLowerCase().includes(query) ||
+            order.items.some(item => 
+                String(item.title).toLowerCase().includes(query) ||
+                String(item.authors || '').toLowerCase().includes(query)
+            )
+        );
+    });
+
     return (
         <div className="font-[family-name:var(--font-poppins)] w-full max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-8">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6 sm:mb-8">Your Orders</h1>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Your Orders</h1>
+                <div className="relative w-full sm:w-auto">
+                    <Input
+                        placeholder="Search orders..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-3 pr-10 w-full sm:w-64 rounded-[0.5rem] placeholder:text-gray-500 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white focus:ring-black dark:focus:ring-white"
+                    />
+                    {searchQuery && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                        >
+                            <X className="h-3 w-3" />
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {searchQuery && (
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-[0.5rem]">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                        Showing {filteredOrders.length} of {orders.length} orders matching &quot;{searchQuery}&quot;
+                    </p>
+                </div>
+            )}
 
             <div className="space-y-4 sm:space-y-6">
-                {orders.map((order) => {
+                {filteredOrders.map((order) => {
                     const isExpanded = expandedOrders[order.id] || false;
                     const totalAmount = order.items.reduce((sum, item) => sum + (item.price_at_time * item.quantity), 0);
 
