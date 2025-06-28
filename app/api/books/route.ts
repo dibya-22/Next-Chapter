@@ -49,7 +49,7 @@ const getBooksFromDB = async (n: number, type: BookType, search?: string, catego
             const query = `
                 SELECT * FROM books
                 WHERE category ILIKE $1
-                ORDER BY total_sold DESC
+                ORDER BY rating DESC
                 LIMIT $2
             `
             const result = await client.query(query, [`%${category}%`, n]);
