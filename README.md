@@ -57,30 +57,50 @@ This is a demonstration project:
   - Browse and search books
   - Detailed book information pages
   - Admin book management interface
+  - Advanced search and filtering capabilities
 
 - 🛒 **Shopping Experience**
   - Shopping cart functionality
   - Order management system
   - Order status tracking
   - Secure payment integration with Razorpay
+  - Real-time cart updates
+
+- ❤️ **Wishlist System**
+  - Add/remove books to personal wishlist
+  - Wishlist management page
+  - Heart icon indicators on book cards
+  - Search and filter wishlist items
 
 - 📝 **User Reviews and Ratings**
   - Users can leave reviews and ratings for books
   - Ratings are displayed on book pages
+
+- 🔍 **Search & Filter**
+  - Advanced search functionality across books
+  - Filter books by category, rating, price
+  - Search orders and wishlist items
+  - Real-time search results
 
 - 🎨 **UI/UX**
   - Modern, responsive design
   - Dark/Light theme support
   - Smooth animations and transitions
   - Toast notifications for user feedback
+  - Enhanced empty states for cart, orders, and wishlist
+  - Loading skeletons and improved user experience
+
+- 👨‍💼 **Admin Dashboard**
+  - Comprehensive admin interface
+  - User management with search and filtering
+  - Order management with status updates
+  - Book inventory management
 
 ### Coming Soon
-- [ ] Advanced search and filtering
-- [ ] Wishlist functionality
 - [ ] Social sharing features
-- [ ] Enhanced admin dashboard
-- [ ] Analytics and reporting
 - [ ] AI customer support system
+- [ ] Advanced analytics and insights
+- [ ] Email notifications
 - [ ] And more features based on user suggestions!
 
 ## 💡 Suggestions & Feedback
