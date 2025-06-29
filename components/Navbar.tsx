@@ -238,6 +238,9 @@ const Navbar = () => {
                             <button onClick={() => handleMenuClick(() => handleSearch())} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
                                 <Image src="/icons/search.png" width={30} height={30} alt="search icon" className='dark:invert' />
                             </button>
+                            <Link href="/wishlist" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
+                                <Image src="/icons/heart.png" width={23} height={23} alt="orders icon" className='dark:invert' />
+                            </Link>
                             <Link href="/cart" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
                                 <Image src="/icons/cart.png" width={23} height={23} alt="cart icon" className='dark:invert' />
                                 {cartCount > 0 && (
@@ -280,6 +283,9 @@ const Navbar = () => {
                             <button onClick={() => handleMenuClick(() => handleSearch())} className={`w-8 h-8 flex items-center justify-center hover:animate-wiggle active:animate-switch ${isSearchOpen ? "hidden" : "block"}`}>
                                 <Image src="/icons/search.png" width={30} height={30} alt="search icon" className='dark:invert' />
                             </button>
+                            <Link href="/wishlist" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle">
+                                <Image src="/icons/heart.png" width={23} height={23} alt="orders icon" className='dark:invert' />
+                            </Link>
                             <Link href="/cart" onClick={() => handleMenuClick(() => {})} className="w-8 h-8 flex items-center justify-center hover:animate-wiggle relative">
                                 <Image src="/icons/cart.png" width={23} height={23} alt="cart icon" className='dark:invert' />
                                 {cartCount > 0 && (

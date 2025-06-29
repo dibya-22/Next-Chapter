@@ -1,21 +1,82 @@
 "use client"
 import Image from "next/image"
 import type React from "react"
-import { Star, StarHalf, Users, Eye, ShoppingCart, BookOpen, Check } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { Star, StarHalf, Users, Eye, ShoppingCart, BookOpen, Check, Heart } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import type { Book } from "@/lib/types"
 import { useUser } from "@clerk/nextjs"
 
 interface BookCardProps {
     book: Book
+    onWishlistToggle?: (isInWishlist: boolean) => void
 }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, onWishlistToggle }: BookCardProps) {
     const { isSignedIn } = useUser();
     const [isExpanded, setIsExpanded] = useState(false)
     const [isAddingToCart, setIsAddingToCart] = useState(false)
     const [isAdded, setIsAdded] = useState(false)
+    const [isInWishlist, setIsInWishlist] = useState(false)
+    const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
     const cardRef = useRef<HTMLDivElement>(null)
+
+    const checkWishlistStatus = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/wishlist/getid?bookId=${book.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setIsInWishlist(data.exists);
+            }
+        } catch (error) {
+            console.error('Error checking wishlist status:', error);
+        }
+    }, [book.id]);
+
+    const toggleWishlist = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        
+        if (!isSignedIn) {
+            // TODO: Show sign-in prompt
+            return;
+        }
+
+        if (isTogglingWishlist) return;
+
+        setIsTogglingWishlist(true);
+
+        try {
+            const url = isInWishlist ? '/api/wishlist/remove' : '/api/wishlist/add';
+            const method = isInWishlist ? 'DELETE' : 'POST';
+            
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bookId: book.id })
+            });
+
+            if (response.ok) {
+                const newWishlistStatus = !isInWishlist;
+                setIsInWishlist(newWishlistStatus);
+                // Notify parent component about wishlist status change
+                onWishlistToggle?.(newWishlistStatus);
+            } else {
+                console.error('Error toggling wishlist:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error toggling wishlist:', error);
+        } finally {
+            setIsTogglingWishlist(false);
+        }
+    };
+
+    // Check if book is in wishlist on component mount
+    useEffect(() => {
+        if (isSignedIn) {
+            checkWishlistStatus();
+        }
+    }, [isSignedIn, checkWishlistStatus]);
 
     // Helper function to format authors
     const formatAuthors = (authors: string | string[]): string => {
@@ -113,6 +174,23 @@ export function BookCard({ book }: BookCardProps) {
                     }`}
             >
                 {book.discount}% OFF
+            </div>
+
+            {/* Heart Icon for Wishlist */}
+            <div
+                className={`absolute top-2 sm:top-3 z-10 ${isExpanded ? "right-2 sm:right-3" : "left-2 sm:left-3"}`}
+            >
+                <button 
+                    className="bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 p-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    onClick={toggleWishlist}
+                    disabled={isTogglingWishlist}
+                >
+                    <Heart className={`w-4 h-4 transition-colors duration-300 ${
+                        isInWishlist 
+                            ? "text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400" 
+                            : "text-gray-600 hover:text-red-500 dark:text-gray-300 dark:hover:text-red-400"
+                    } ${isTogglingWishlist ? 'animate-pulse' : ''}`} />
+                </button>
             </div>
 
             {isExpanded ? (
