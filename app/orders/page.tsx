@@ -103,12 +103,74 @@ const Order = () => {
 
     if (orders.length === 0) {
         return (
-            <div className="w-full max-w-md mx-auto my-20 sm:my-32 px-6 sm:px-10 py-6 sm:py-8 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 justify-center items-center border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer transition-all duration-300 ease-out shadow-lg hover:shadow-2xl hover:-translate-y-2 scale-105 transform-gpu group space-y-4">
-                <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-center opacity-90'>No Order Placed</h1>
-                <div className='flex flex-col items-center justify-center gap-2'>
-                    <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400 flex items-center text-center gap-1'>
-                        <Link href="/cart" className='text-black dark:text-white underline'>Go to Cart</Link> to get started.
-                    </p>
+            <div className="font-[family-name:var(--font-poppins)] w-full max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-8">
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                    {/* Package Icon */}
+                    <div className="mb-6 sm:mb-8">
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+                            <svg 
+                                className="w-12 h-12 sm:w-16 sm:h-16 text-blue-500 dark:text-blue-400" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="max-w-md mx-auto space-y-4 sm:space-y-6">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            No Orders Yet
+                        </h1>
+                        
+                        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Start your reading adventure by placing your first order. Your order history will appear here.
+                        </p>
+
+                        {/* Features List */}
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                What you&#39;ll get with every order:
+                            </h3>
+                            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2 text-left">
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                    Fast and reliable delivery
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                    Real-time order tracking
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                    Secure payment processing
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                    Easy returns and support
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Call to Action */}
+                        <div className="space-y-3 sm:space-y-4">
+                            <Link 
+                                href="/cart" 
+                                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                Go to Cart
+                            </Link>
+                            
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
+                                Add books to your cart and complete your first order
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

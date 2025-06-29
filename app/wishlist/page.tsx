@@ -114,7 +114,80 @@ const Wishlist = () => {
         );
     });
 
-    
+    if (wishlistItems.length === 0) {
+        return (
+            <div className='font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-28'>
+                <SectionHeader title="My Wishlist" />
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                    {/* Heart Icon */}
+                    <div className="mb-6 sm:mb-8">
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+                            <svg 
+                                className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 dark:text-red-400" 
+                                fill="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="max-w-md mx-auto space-y-4 sm:space-y-6">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            Your Wishlist is Empty
+                        </h1>
+                        
+                        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Start building your reading collection by adding books you love to your wishlist.
+                        </p>
+
+                        {/* Features List */}
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                Why create a wishlist?
+                            </h3>
+                            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2 text-left">
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                    Save books for later purchase
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                    Get notified about price drops
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                    Organize your reading goals
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                    Share with friends and family
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Call to Action */}
+                        <div className="space-y-3 sm:space-y-4">
+                            <Link 
+                                href="/books" 
+                                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Browse Books
+                            </Link>
+                            
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
+                                Click the heart icon on any book to add it to your wishlist
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-28'>
