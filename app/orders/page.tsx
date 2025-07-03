@@ -380,7 +380,7 @@ const Order = () => {
                                                             </p>
                                                             <div className="flex justify-between items-center mt-1">
                                                                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">
-                                                                    ₹{item.price_at_time.toFixed(2)} × {item.quantity}
+                                                                    ₹{item.price_at_time.toFixed(2)} x {item.quantity}
                                                                 </p>
                                                                 <p className="text-sm sm:text-base font-medium">₹{(item.price_at_time * item.quantity).toFixed(2)}</p>
                                                             </div>
@@ -410,7 +410,7 @@ const Order = () => {
                                     </div>
 
                                     <div className='flex flex-col sm:flex-row justify-end gap-2 sm:gap-3'>
-                                        {order.tracking_number && (
+                                        {order.tracking_number && order.delivery_status !== 'Delivered' && order.delivery_status !== 'Cancelled' && (
                                             <Button variant="outline" className="text-xs sm:text-sm">Track Package</Button>
                                         )}
                                         <Button className="text-xs sm:text-sm">Need Help?</Button>
