@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Sparkles, PersonStanding, Carrot, ArrowRight, BriefcaseBusiness } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import Chatbot from "@/components/Chatbot"
 
 type Category = {
   name: string;
@@ -55,6 +56,7 @@ export default function Home() {
   return (
     <main className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[11vh] md:mt-7 flex flex-col items-center justify-center gap-8 sm:gap-12 lg:gap-16">
       <Warning />
+      <Chatbot />
 
       <section className=" flex flex-col items-center justify-center gap-3 sm:gap-5 mt-8 sm:mt-12 lg:mt-20">
         <Badge variant="default" className="mb-2 sm:mb-6 text-xs sm:text-sm font-medium bg-[#E6E6C0] dark:bg-[#3C3C3C]">
@@ -94,6 +96,7 @@ export default function Home() {
               src="https://books.google.com/books/content?id=CbouDwAAQBAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api"
               alt="Ikigai book cover"
               fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
               className="object-cover"
             />
           </Link>
@@ -105,6 +108,7 @@ export default function Home() {
               src="https://books.google.com/books/content?id=fFCjDQAAQBAJ&printsec=frontcover&img=1&zoom=3&edge=curl&source=gbs_api"
               alt="Atomic Habit book cover"
               fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
               className="object-cover"
             />
           </Link>
@@ -116,6 +120,7 @@ export default function Home() {
               src="https://books.google.com/books/content?id=5EORDwAAQBAJ&printsec=frontcover&img=1&zoom=3&edge=curl&source=gbs_api"
               alt="Kaizen book cover"
               fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
               className="object-cover"
             />
           </Link>
@@ -127,6 +132,7 @@ export default function Home() {
               src="https://books.google.com/books/content?id=A3CPoAEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
               alt="Vagabond book cover"
               fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
               className="object-cover"
             />
           </Link>
