@@ -40,10 +40,6 @@ const Navbar = () => {
     const [switchoff] = useSound('/sounds/switch_off.mp3', { volume: 0.5 });
     const [pop] = useSound('/sounds/pop.wav', { volume: 0.5 });
 
-    // Menu sounds
-    const [menuopen] = useSound('/sounds/open-menu.wav', { volume: 0.5 });
-    const [menuclose] = useSound('/sounds/close-menu.wav', { volume: 0.2 });
-
     useEffect(() => {
         setMounted(true);
         // Fetch cart count when component mounts
@@ -73,11 +69,6 @@ const Navbar = () => {
     }
 
     const toggleMenu = () => {
-        if (!isMenuOpen) {
-            menuopen();
-        } else {
-            menuclose();
-        }
         setIsMenuOpen(!isMenuOpen);
     };
 
