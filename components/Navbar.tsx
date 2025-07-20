@@ -156,7 +156,7 @@ const Navbar = () => {
             </div>
 
             {/* Search Bar - Responsive positioning */}
-            <div className={`search-bar absolute left-1/2 transform -translate-x-1/2 top-full mt-2 sm:relative sm:left-auto sm:transform-none sm:top-auto sm:mt-0 ${isSearchOpen ? "visible opacity-100 translate-y-0" : "invisible opacity-0 translate-y-[-20px] sm:translate-x-0"} ${isSearchFocused ? "scale-105" : "scale-100"} transform transition-all duration-500 ease-in-out z-40`}>
+            <div className={`search-bar absolute left-1/2 transform -translate-x-1/2 top-full mt-2 sm:relative sm:left-auto sm:transform-none sm:top-auto sm:mt-0 ${isSearchOpen ? "visible opacity-100 translate-y-5" : "invisible opacity-0 translate-y-[-20px] sm:translate-x-0"} ${isSearchFocused ? "scale-105" : "scale-100"} transform transition-all duration-500 ease-in-out z-40`}>
                 <form onSubmit={handleSearchSubmit} className='relative flex items-center'>
                     <input
                         type="text"
