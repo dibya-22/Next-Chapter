@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Sparkles, PersonStanding, Carrot, ArrowRight, BriefcaseBusiness } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import Chatbot from "@/components/Chatbot"
 
 type Category = {
   name: string;
@@ -56,7 +55,6 @@ export default function Home() {
   return (
     <main className="font-[family-name:var(--font-poppins)] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[11vh] md:mt-7 flex flex-col items-center justify-center gap-8 sm:gap-12 lg:gap-16">
       <Warning />
-      <Chatbot />
 
       <section className=" flex flex-col items-center justify-center gap-3 sm:gap-5 mt-8 sm:mt-12 lg:mt-20">
         <Badge variant="default" className="mb-2 sm:mb-6 text-xs sm:text-sm font-medium bg-[#E6E6C0] dark:bg-[#3C3C3C]">

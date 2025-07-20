@@ -8,6 +8,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import Script from "next/script";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Chatbot from "@/components/Chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -81,6 +82,7 @@ export default function RootLayout({
             <Navbar />
             {children}
             <ToastContainer />
+            <Chatbot />
           </ThemeProvider>
         </body>
       </html>
