@@ -9,7 +9,12 @@ interface PostgresError extends Error {
 
 export async function POST(request: Request) {
     const { userId } = await auth();
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!userId) {
+        return NextResponse.json(
+            { error: "Please log in to add items to your cart." },
+            { status: 401 }
+        );
+    }
 
     try {
         const client = await pool.connect();

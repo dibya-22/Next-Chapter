@@ -5,6 +5,8 @@ import { Star, StarHalf, Users, Eye, ShoppingCart, BookOpen, Check, Heart } from
 import { useState, useEffect, useRef, useCallback } from "react"
 import type { Book } from "@/lib/types"
 import { useUser } from "@clerk/nextjs"
+import { toast } from "react-toastify"
+import { useRouter } from "next/navigation"
 
 interface BookCardProps {
     book: Book
@@ -20,6 +22,8 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
     const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
     const cardRef = useRef<HTMLDivElement>(null)
 
+    const router = useRouter();
+
     const checkWishlistStatus = useCallback(async () => {
         try {
             const response = await fetch(`/api/wishlist/getid?bookId=${book.id}`);
@@ -34,7 +38,7 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
 
     const toggleWishlist = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        
+
         if (!isSignedIn) {
             // TODO: Show sign-in prompt
             return;
@@ -47,7 +51,7 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
         try {
             const url = isInWishlist ? '/api/wishlist/remove' : '/api/wishlist/add';
             const method = isInWishlist ? 'DELETE' : 'POST';
-            
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -101,8 +105,10 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
         if (isAddingToCart || isAdded) return
 
         if (!isSignedIn) {
-            return;
-        }
+                toast.error("Please log in to add items to your cart.");
+                router.push("https://present-krill-46.accounts.dev/sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fbooks");
+                return;
+            }
 
         setIsAddingToCart(true)
 
@@ -122,6 +128,7 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
                     quantity: 1
                 })
             });
+            
 
             if (!response.ok) {
                 throw new Error('Failed to add to cart');
@@ -163,8 +170,8 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
         <div
             ref={cardRef}
             className={`book relative mx-auto h-auto sm:h-[420px] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 flex cursor-pointer group hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl overflow-hidden ${isExpanded
-                    ? "w-full max-w-full sm:max-w-[580px] col-span-2 sm:col-span-2 lg:col-span-2"
-                    : "w-full max-w-[280px] flex-col items-center p-3 sm:p-4"
+                ? "w-full max-w-full sm:max-w-[580px] col-span-2 sm:col-span-2 lg:col-span-2"
+                : "w-full max-w-[280px] flex-col items-center p-3 sm:p-4"
                 }`}
             style={isExpanded ? { gridColumn: "span 2" } : {}}
         >
@@ -180,16 +187,15 @@ export function BookCard({ book, onWishlistToggle }: BookCardProps) {
             <div
                 className={`absolute top-2 sm:top-3 z-10 ${isExpanded ? "right-2 sm:right-3" : "left-2 sm:left-3"}`}
             >
-                <button 
+                <button
                     className="bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 p-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
                     onClick={toggleWishlist}
                     disabled={isTogglingWishlist}
                 >
-                    <Heart className={`w-4 h-4 transition-colors duration-300 ${
-                        isInWishlist 
-                            ? "text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400" 
+                    <Heart className={`w-4 h-4 transition-colors duration-300 ${isInWishlist
+                            ? "text-red-500 fill-red-500 dark:text-red-400 dark:fill-red-400"
                             : "text-gray-600 hover:text-red-500 dark:text-gray-300 dark:hover:text-red-400"
-                    } ${isTogglingWishlist ? 'animate-pulse' : ''}`} />
+                        } ${isTogglingWishlist ? 'animate-pulse' : ''}`} />
                 </button>
             </div>
 
